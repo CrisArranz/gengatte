@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+/* Modo oscuro por clase en <html>, no por prefers-color-scheme:
+   el boton de tema debe poder imponer su eleccion sobre la del sistema. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Tipografia provisional (fase 0). Cambiarla mas adelante es tocar solo esta linea. */
+  --font-sans: Verdana, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+body {
+  @apply bg-white font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
