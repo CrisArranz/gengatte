@@ -170,7 +170,7 @@ Los percentiles se precalculan en el script de datos sobre los 1025 Pokémon, de
 | Estilos | Tailwind CSS v4 | Requisito; `@theme` para tokens, variante `dark` por clase |
 | Rutas | React Router | Menú con varias páginas (inicio, ficha, FAQs, tabla de tipos) y enlaces compartibles |
 | Tipografía | Verdana con la pila por defecto de Tailwind como respaldo | Decisión provisional del usuario; se cambia en un solo token de `@theme` |
-| Tests | Vitest + Testing Library | Fórmulas y matriz de tipos necesitan tests unitarios |
+| Verificación | Aserciones dentro de `build-data.mjs` | **Sin framework de tests** (decisión del usuario). La corrección se garantiza validando el dataset contra valores conocidos al generarlo |
 | Datos | Script Node + GraphQL PokeAPI | Ver sección 2 |
 | Lint | ESLint + Prettier | Consistencia |
 | Servidor de producción | Express mínimo (`server.js`) | Heroku necesita un proceso que escuche en `$PORT`; ver sección 9 |
@@ -199,8 +199,7 @@ gengatte/
 │  │  ├─ typeChart.ts          # defensiva y ofensiva
 │  │  ├─ stats.ts              # fórmulas nivel 100
 │  │  ├─ role.ts               # clasificación de rol
-│  │  ├─ nature.ts             # naturaleza óptima (3.6)
-│  │  └─ *.test.ts
+│  │  └─ nature.ts             # naturaleza óptima (3.6)
 │  ├─ data/
 │  │  ├─ usePokedex.ts         # carga única del dataset
 │  │  ├─ manifest.ts           # generado por el script
@@ -296,9 +295,9 @@ Cuatro vistas, con un menú común en la cabecera junto al botón de tema.
 
 | Fase | Contenido | Criterio de aceptación |
 |---|---|---|
-| **0. Scaffold** | Vite + React + TS + Tailwind v4, ESLint/Prettier, Vitest | `npm run dev` sirve una página con Tailwind aplicado |
+| **0. Scaffold** | Vite + React + TS + Tailwind v4, ESLint/Prettier | `npm run dev` sirve una página con Tailwind aplicado |
 | **1. Datos** | `scripts/build-data.mjs`, validación de la respuesta, JSON generados | `npm run data:build` produce 1025 entradas y una matriz 18×18 válida |
-| **2. Dominio** | `typeChart.ts`, `stats.ts`, `role.ts`, `nature.ts` + tests | Tests verdes con casos conocidos (Charizard x4 roca, Ferrothorn x4 fuego, Gengar inmune a normal/lucha, HP máx de Blissey = 714, naturaleza Firme para un atacante físico y Miedosa para un veloz especial) |
+| **2. Dominio** | `typeChart.ts`, `stats.ts`, `role.ts`, `nature.ts` | Comprobación manual en pantalla con casos conocidos: Charizard x4 roca, Ferrothorn x4 fuego, Gengar inmune a normal/lucha, HP máx de Blissey = 714, naturaleza Firme para un atacante físico y Miedosa para un veloz especial |
 | **3. Búsqueda** | Carga del dataset, normalización, autocompletado | Escribir "char" propone Charmander/Charmeleon/Charizard; "25" encuentra a Pikachu |
 | **4. Rutas y vistas** | React Router, menú, las 4 páginas de la sección 6 sin refinar el estilo | Inicio, ficha, tabla de tipos y FAQs navegables; los 4 objetivos de la sección 1 más los tips visibles para cualquier Pokémon |
 | **5. Tema + despliegue** | `useTheme`, botón anti-parpadeo, `server.js`, `Procfile`, primer `git push heroku main` | App accesible en la URL de Heroku, tema persistido, sin flash al recargar, y `/faq` recargado en caliente sirve la app (no un 404) |
@@ -315,7 +314,7 @@ El despliegue se adelanta a la fase 5, **antes** del diseño visual: así el tra
 - Un commit de cierre por fase, con el número de fase en el cuerpo para poder rastrearlo:
 
   ```
-  chore(scaffold): set up vite, react, tailwind, vitest
+  chore(scaffold): set up vite, react, tailwind
 
   Fase 0 del PLAN.md. Criterio de aceptación verificado:
   npm run dev sirve la página con Tailwind aplicado.
@@ -325,7 +324,7 @@ El despliegue se adelanta a la fase 5, **antes** del diseño visual: así el tra
 - Los cambios en `PLAN.md` van como `docs(plan): …`.
 - El dataset generado se commitea aparte: `chore(data): regenerate pokedex dataset`, para que un cambio de datos no se mezcle con cambios de código.
 - Se trabaja sobre `main`: proyecto de un solo autor y Heroku despliega desde esa rama. Nada se sube a Heroku hasta la fase 5.
-- Antes de cada commit de cierre deben pasar `npm run lint` y `npm test`.
+- Antes de cada commit de cierre deben pasar `npm run lint` y `npm run build`, y el criterio de aceptación de la fase debe verificarse a mano en el navegador.
 
 ---
 
@@ -400,7 +399,7 @@ Sin add-ons, sin base de datos, sin variables secretas: la app no tiene backend 
 
 ### 9.5 Despliegue continuo (opcional, fase 7)
 
-Conectar el repositorio de GitHub a Heroku con despliegue automático desde `main`, condicionado a que pase el workflow de CI (lint + tests). Alternativa sin coste añadido: mantener el `git push heroku main` manual.
+Conectar el repositorio de GitHub a Heroku con despliegue automático desde `main`, condicionado a que pase un workflow de CI con `lint` y `build`. Alternativa sin coste añadido: mantener el `git push heroku main` manual.
 
 ---
 

@@ -25,11 +25,6 @@ export default tseslint.config(
     },
   },
   {
-    // Tests usan las globales de Vitest (describe, it, expect).
-    files: ['**/*.{test,spec}.{ts,tsx}', 'src/test/**'],
-    languageOptions: { globals: { ...globals.browser, ...globals.node } },
-  },
-  {
     // Scripts de build: entorno Node, no navegador.
     files: ['scripts/**/*.{js,mjs}', 'vite.config.ts', 'server.js'],
     languageOptions: { globals: globals.node },

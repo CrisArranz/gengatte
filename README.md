@@ -7,7 +7,7 @@ El plan completo del proyecto está en [PLAN.md](PLAN.md).
 
 ## Estado
 
-Fase 0 completada: scaffold con Vite, React, TypeScript, Tailwind CSS v4 y Vitest.
+Fase 0 completada: scaffold con Vite, React, TypeScript y Tailwind CSS v4.
 
 ## Requisitos
 
@@ -27,8 +27,7 @@ npm run dev
 | `npm run dev` | Servidor de desarrollo con recarga en caliente |
 | `npm run build` | Comprobación de tipos + build de producción en `dist/` |
 | `npm run preview` | Sirve el build de producción en local |
-| `npm test` | Tests con Vitest |
-| `npm run test:watch` | Tests en modo observación |
+| `npm run data:build` | Regenera el dataset estático desde PokeAPI |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier sobre el proyecto |
 
