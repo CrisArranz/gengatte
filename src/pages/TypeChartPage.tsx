@@ -18,7 +18,7 @@ export function TypeChartPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl uppercase">Tabla de tipos</h1>
+      <h1 className="font-display text-2xl uppercase">Tabla de tipos</h1>
       <p className="text-sm opacity-70">
         Las filas son el tipo del ataque y las columnas el tipo del Pokémon que lo recibe. En un
         Pokémon de doble tipo se multiplican los dos valores: de ahí salen el x4 y el x0,25.

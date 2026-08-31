@@ -4,9 +4,30 @@
    el boton de tema debe poder imponer su eleccion sobre la del sistema. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Titan One, con licencia SIL Open Font License (src/fonts/OFL.txt).
+ * Se sirve desde el propio dominio, asi que la CSP no necesita abrirse a
+ * terceros y el fichero lo versiona Vite: al pasar por assets/ hereda el
+ * Cache-Control inmutable que ya aplica server.js.
+ *
+ * Solo el subconjunto latino: cubre los acentos y el apostrofo tipografico
+ * de Farfetch'd, que es todo lo que aparece en los nombres del dataset.
+ */
+@font-face {
+  font-family: 'Titan One';
+  font-style: normal;
+  font-weight: 400;
+  /* El texto se ve desde el primer instante con la tipografia de respaldo
+     y salta a Titan One al llegar: nunca queda un titular invisible. */
+  font-display: swap;
+  src: url('./fonts/titan-one-latin.woff2') format('woff2');
+}
+
 @theme {
-  /* Tipografia provisional (fase 0). Cambiarla mas adelante es tocar solo esta linea. */
-  --font-sans: Verdana, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Titulares: wordmark, nombres de Pokemon y titulos de panel. */
+  --font-display: 'Titan One', Verdana, ui-sans-serif, system-ui, sans-serif;
+  /* Texto corrido y tablas. Cambiarla mas adelante es tocar solo esta linea. */
+  --font-sans: Verdana, ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
 }
 
 body {

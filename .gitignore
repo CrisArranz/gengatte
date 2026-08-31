@@ -20,3 +20,7 @@ coverage
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Tipografia propietaria descargada para evaluarla y descartada por licencia
+# (ver PLAN.md, seccion 10). Nunca debe entrar en el repositorio.
+ITC Kabel Ultra Regular/

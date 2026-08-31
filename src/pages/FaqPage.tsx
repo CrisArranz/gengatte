@@ -7,7 +7,7 @@ import { NATURE_DISCLAIMER } from '../domain/nature'
 function Question({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="text-lg uppercase">{title}</h2>
+      <h2 className="font-display text-lg uppercase">{title}</h2>
       <div className="space-y-2 text-sm">{children}</div>
     </section>
   )
@@ -27,7 +27,7 @@ export function FaqPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl uppercase">Preguntas frecuentes</h1>
+      <h1 className="font-display text-2xl uppercase">Preguntas frecuentes</h1>
 
       <Question title="¿Qué son las naturalezas?">
         <p>

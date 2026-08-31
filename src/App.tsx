@@ -32,7 +32,7 @@ function Layout() {
   return (
     <>
       <header className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-6">
-        <Link to="/" className="text-2xl tracking-wide">
+        <Link to="/" className="font-display text-3xl tracking-wide">
           Gengatte
         </Link>
         <div className="flex flex-wrap items-center gap-4">

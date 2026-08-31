@@ -169,7 +169,7 @@ Los percentiles se precalculan en el script de datos sobre los 1025 Pokémon, de
 | UI | React 19 + TypeScript | Requisito + seguridad de tipos en el modelo de datos |
 | Estilos | Tailwind CSS v4 | Requisito; `@theme` para tokens, variante `dark` por clase |
 | Rutas | React Router | Menú con varias páginas (inicio, ficha, FAQs, tabla de tipos) y enlaces compartibles |
-| Tipografía | Verdana con la pila por defecto de Tailwind como respaldo | Decisión provisional del usuario; se cambia en un solo token de `@theme` |
+| Tipografía | Titan One (OFL) en titulares, Verdana en el texto | Dos tokens de `@theme`; ver 6.5 |
 | Verificación | Aserciones dentro de `build-data.mjs` | **Sin framework de tests** (decisión del usuario). La corrección se garantiza validando el dataset contra valores conocidos al generarlo |
 | Datos | Script Node + GraphQL PokeAPI | Ver sección 2 |
 | Lint | ESLint + Prettier | Consistencia |
@@ -275,7 +275,7 @@ Cuatro vistas, con un menú común en la cabecera junto al botón de tema.
 ### 6.5 Transversal
 
 - **Menú**: enlaces a Inicio, Tabla de tipos y FAQs; en móvil se pliega. Marca la ruta activa con `aria-current`.
-- **Tipografía**: Verdana con respaldo a la pila por defecto de Tailwind, definida como un único token de `@theme`. Cambiarla más adelante es tocar una línea.
+- **Tipografía**: dos tokens de `@theme`. `--font-display` es **Titan One**, autoalojada, para el wordmark, los nombres de Pokémon y los títulos de panel; `--font-sans` sigue siendo Verdana para el texto corrido y las tablas, donde un peso de display sería ilegible. Cambiar cualquiera de las dos es tocar una línea.
 - **Modo claro/oscuro**: botón en la cabecera. Clase en `<html>`, persistencia en `localStorage`, valor inicial desde `prefers-color-scheme`, y script inline en `index.html` que aplica la clase antes del primer render para evitar el parpadeo blanco.
 - **Responsive y accesible**: contraste AA, foco visible, `aria-live` en los resultados de búsqueda, y ninguna información codificada solo por color (siempre acompañada del texto "x2", "x0.5", …).
 
@@ -409,7 +409,9 @@ Conectar el repositorio de GitHub a Heroku con despliegue automático desde `mai
 - **Habilidades que alteran la efectividad** (Levitación, Absorbe Agua, Pararrayos): no se contemplan en el cálculo. Se puede añadir más adelante como nota informativa en la ficha.
 - **Esquema GraphQL de PokeAPI**: `v1beta2` es la versión actual; si cambiara, solo hay que tocar `scripts/build-data.mjs`, porque el JSON ya commiteado sigue sirviendo a la app.
 - **Datos de Tera/generación 10**: al regenerar el dataset se incorporan automáticamente.
-- **Tipografía**: Verdana es provisional. Al estar como token único de `@theme`, cambiarla luego (incluida una fuente web) no toca ningún componente.
+- **Tipografía**: decidida. Titan One, con licencia SIL Open Font License, servida desde `src/fonts/` para que Vite la versione y herede el `Cache-Control` inmutable de `assets/`. Solo el subconjunto latino (10,7 kB): cubre los acentos y el apóstrofo de Farfetch’d, que es todo lo que aparece en los nombres del dataset.
+- **Tipografía descartada**: ITC Kabel Ultra. Su tabla `name` declara «Copyright 1990 as an unpublished work by Bitstream Inc. All rights reserved. Confidential.» y la copia disponible venía de un sitio que la redistribuye sin licencia, así que servirla desde Heroku sería redistribuir tipografía propietaria. Titan One reproduce su peso; el esqueleto geométrico de los años 20 se perdería, y esa fue la parte que se decidió sacrificar.
+- **Símbolos ♀ y ♂**: los nombres de Nidoran los usan y no están en Titan One (ni estaban en ITC Kabel). Caen al tipo de respaldo glifo a glifo, que es el comportamiento correcto del navegador y no rompe nada.
 - **Recomendación de naturaleza**: heurística basada solo en estadísticas base, sin movimientos ni objetos. Se muestra con su aviso correspondiente (3.6). Si más adelante interesa afinarla, la vía sería incorporar el conjunto de movimientos, lo que exige ampliar el dataset.
 - **Coste en Heroku**: dyno Basic siempre activo. Si en algún momento interesa abaratarlo, la app es 100 % estática y podría servirse desde un CDN, pero eso contradice el requisito de desplegar en Heroku, así que no se contempla.
 
