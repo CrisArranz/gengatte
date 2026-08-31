@@ -24,6 +24,7 @@ export function NatureTips({ role, suggestions }: NatureTipsProps) {
       </div>
 
       <ul className="space-y-3">
+        <h3 className="text-lg font-display uppercase">Naturalezas recomendadas</h3>
         {suggestions.map((suggestion) => (
           <li key={suggestion.nature.id}>
             <p>

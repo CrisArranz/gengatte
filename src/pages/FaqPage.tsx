@@ -3,6 +3,7 @@ import { STAT_LABEL_ES } from '@/data/schema'
 import { useDataset } from '@/data/pokedexContext'
 import { DATA_MANIFEST } from '@/data/manifest'
 import { NATURE_DISCLAIMER } from '@/domain/nature'
+import { capitalize } from '@/utils/texts.utils'
 
 function Question({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -42,12 +43,16 @@ export function FaqPage() {
         </p>
 
         <div className="overflow-x-auto">
-          <table className="text-sm">
+          <table className="text-sm border-collapse">
             <thead>
               <tr className="text-left">
                 <th scope="col">Naturaleza</th>
-                <th scope="col">Inglés</th>
-                <th scope="col">+10 %</th>
+                <th className="border-x-8 border-transparent" scope="col">
+                  Inglés
+                </th>
+                <th className="border-x-8 border-transparent" scope="col">
+                  +10 %
+                </th>
                 <th scope="col">−10 %</th>
               </tr>
             </thead>
@@ -57,8 +62,12 @@ export function FaqPage() {
                   <th scope="row" className="pr-4 text-left font-normal">
                     {nature.nameEs}
                   </th>
-                  <td className="pr-4 opacity-70">{nature.name}</td>
-                  <td className="pr-4">{nature.up && STAT_LABEL_ES[nature.up]}</td>
+                  <td className="pr-4 opacity-70 border-x-8 border-transparent">
+                    {capitalize(nature.name)}
+                  </td>
+                  <td className="pr-4 border-x-8 border-transparent">
+                    {nature.up && STAT_LABEL_ES[nature.up]}
+                  </td>
                   <td>{nature.down && STAT_LABEL_ES[nature.down]}</td>
                 </tr>
               ))}

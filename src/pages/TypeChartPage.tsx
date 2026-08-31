@@ -25,7 +25,7 @@ export function TypeChartPage() {
       </p>
 
       {/* 18 columnas no caben en 360 px: el desplazamiento horizontal es imprescindible. */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-none">
         <table className="border-collapse text-center text-xs">
           <caption className="mb-2 text-left text-sm">
             ← Pokémon oponente → (columnas) · Tipo de ataque ↓ (filas)
@@ -98,10 +98,10 @@ export function TypeChartPage() {
       </div>
 
       <ul className="flex flex-wrap gap-4 text-sm">
-        <li>2 = súper efectivo (x2)</li>
-        <li>· = neutro (x1)</li>
-        <li>½ = poco efectivo (x0,5)</li>
-        <li>0 = inmune</li>
+        <li className="font-display">2 = Súper efectivo (x2)</li>
+        <li className="font-display">· = Neutro (x1)</li>
+        <li className="font-display">½ = Poco efectivo (x0,5)</li>
+        <li className="font-display">0 = Inmune</li>
       </ul>
     </section>
   )
