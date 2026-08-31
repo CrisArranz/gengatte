@@ -1,5 +1,5 @@
-import { STAT_LABEL_ES } from '../data/schema'
-import type { StatRange as Range } from '../domain/stats'
+import { STAT_LABEL_ES } from '@/data/schema'
+import type { StatRange as Range } from '@/domain/stats'
 
 interface StatRangeTableProps {
   ranges: Range[]

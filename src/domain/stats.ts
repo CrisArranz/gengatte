@@ -1,4 +1,4 @@
-import { STAT_INDEX, type Pokemon, type StatKey } from '../data/schema'
+import { STAT_INDEX, type Pokemon, type StatKey } from '@/data/schema'
 
 /**
  * Formulas de estadisticas de la tercera generacion en adelante.

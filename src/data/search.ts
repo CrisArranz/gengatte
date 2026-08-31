@@ -1,4 +1,4 @@
-import type { Pokemon } from './schema'
+import type { Pokemon } from '@/data/schema'
 
 /**
  * Busqueda local sobre el indice ya descargado: sin red, sin latencia.

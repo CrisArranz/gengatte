@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
-import { TypeChart } from '../domain/typeChart'
-import type { Pokedex, Reference } from './schema'
-import type { SearchEntry } from './search'
+import { TypeChart } from '@/domain/typeChart'
+import type { Pokedex, Reference } from '@/data/schema'
+import type { SearchEntry } from '@/data/search'
 
 export interface Dataset {
   pokedex: Pokedex

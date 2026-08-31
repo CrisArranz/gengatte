@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
-import type { EffectGroup } from '../domain/typeChart'
-import { TypeBadge } from './TypeBadge'
+import type { EffectGroup } from '@/domain/typeChart'
+import { TypeBadge } from '@/components/TypeBadge'
 
 interface EffectivenessGridProps {
   groups: EffectGroup[]

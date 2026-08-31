@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
-import { STAT_LABEL_ES } from '../data/schema'
-import { useDataset } from '../data/pokedexContext'
-import { DATA_MANIFEST } from '../data/manifest'
-import { NATURE_DISCLAIMER } from '../domain/nature'
+import { STAT_LABEL_ES } from '@/data/schema'
+import { useDataset } from '@/data/pokedexContext'
+import { DATA_MANIFEST } from '@/data/manifest'
+import { NATURE_DISCLAIMER } from '@/domain/nature'
 
 function Question({ title, children }: { title: string; children: ReactNode }) {
   return (

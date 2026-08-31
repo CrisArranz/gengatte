@@ -1,4 +1,4 @@
-import type { Reference, TypeInfo } from '../data/schema'
+import type { Reference, TypeInfo } from '@/data/schema'
 
 /** Multiplicadores posibles al combinar como mucho dos tipos. */
 export type Multiplier = 0 | 0.25 | 0.5 | 1 | 2 | 4

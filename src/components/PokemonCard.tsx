@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
-import type { Pokemon } from '../data/schema'
-import { spriteUrl } from '../data/sprites'
+import type { Pokemon } from '@/data/schema'
+import { spriteUrl } from '@/data/sprites'
 
 interface PokemonCardProps {
   pokemon: Pokemon

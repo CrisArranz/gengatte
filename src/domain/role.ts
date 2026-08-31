@@ -1,4 +1,4 @@
-import { statOf, type Percentiles, type Pokemon, type StatKey } from '../data/schema'
+import { statOf, type Percentiles, type Pokemon, type StatKey } from '@/data/schema'
 
 /**
  * Clasificacion de rol a partir de las estadisticas BASE.

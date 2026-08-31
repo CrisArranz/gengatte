@@ -1,7 +1,7 @@
-import { STAT_LABEL_ES } from '../data/schema'
-import type { NatureSuggestion } from '../domain/nature'
-import { NATURE_DISCLAIMER } from '../domain/nature'
-import type { Role } from '../domain/role'
+import { STAT_LABEL_ES } from '@/data/schema'
+import type { NatureSuggestion } from '@/domain/nature'
+import { NATURE_DISCLAIMER } from '@/domain/nature'
+import type { Role } from '@/domain/role'
 
 interface NatureTipsProps {
   role: Role

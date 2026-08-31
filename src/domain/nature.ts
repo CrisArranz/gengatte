@@ -5,9 +5,9 @@ import {
   type Percentiles,
   type Pokemon,
   type StatKey,
-} from '../data/schema'
-import { classify, type Role } from './role'
-import { NATURE_BENEFICIAL, NATURE_HINDERING, statWithNature } from './stats'
+} from '@/data/schema'
+import { classify, type Role } from '@/domain/role'
+import { NATURE_BENEFICIAL, NATURE_HINDERING, statWithNature } from '@/domain/stats'
 
 /**
  * Recomendacion de naturaleza a partir de las estadisticas base (PLAN.md 3.6).

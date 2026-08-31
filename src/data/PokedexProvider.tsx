@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { TypeChart } from '../domain/typeChart'
-import { DATA_MANIFEST } from './manifest'
-import { PokedexContext, type DatasetState } from './pokedexContext'
-import type { Pokedex, Reference } from './schema'
-import { buildIndex } from './search'
+import { TypeChart } from '@/domain/typeChart'
+import { DATA_MANIFEST } from '@/data/manifest'
+import { PokedexContext, type DatasetState } from '@/data/pokedexContext'
+import type { Pokedex, Reference } from '@/data/schema'
+import { buildIndex } from '@/data/search'
 
 async function loadJson<T>(url: string, signal: AbortSignal): Promise<T> {
   const response = await fetch(url, { signal })

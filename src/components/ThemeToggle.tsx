@@ -1,4 +1,4 @@
-import { useTheme } from '../theme/useTheme'
+import { useTheme } from '@/theme/useTheme'
 
 /** Boton de tema de la cabecera (PLAN.md 6.5). */
 export function ThemeToggle() {

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { PokemonCard } from '../components/PokemonCard'
-import { SearchBar } from '../components/SearchBar'
-import { useDataset } from '../data/pokedexContext'
-import { search } from '../data/search'
+import { PokemonCard } from '@/components/PokemonCard'
+import { SearchBar } from '@/components/SearchBar'
+import { useDataset } from '@/data/pokedexContext'
+import { search } from '@/data/search'
 
 /** Boceto 1: buscador y rejilla de tarjetas de resultado. */
 export function HomePage() {
