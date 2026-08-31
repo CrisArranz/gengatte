@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router'
 import { AppMenu } from './components/AppMenu'
+import { GengatteMark } from './components/GengatteMark'
 import { ThemeToggle } from './components/ThemeToggle'
 import { PokedexProvider } from './data/PokedexProvider'
 import { useDatasetState } from './data/pokedexContext'
@@ -32,7 +33,8 @@ function Layout() {
   return (
     <>
       <header className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-6">
-        <Link to="/" className="font-display text-3xl tracking-wide">
+        <Link to="/" className="font-display flex items-center gap-3 text-3xl tracking-wide">
+          <GengatteMark className="h-9 w-9 shrink-0" />
           Gengatte
         </Link>
         <div className="flex flex-wrap items-center gap-4">
