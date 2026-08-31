@@ -64,16 +64,16 @@ export function PokemonPage() {
 
   return (
     <article className="space-y-6">
-      <header className="flex flex-wrap items-center gap-6">
+      <header className="flex flex-wrap items-center justify-center gap-6">
         <img
           src={artworkUrl(pokemon.id)}
           alt={pokemon.nameEs}
           width={192}
           height={192}
           decoding="async"
-          className="h-48 w-48 object-contain"
+          className="h-58 w-58 sm:w-48 sm:h-48 object-contain"
         />
-        <div>
+        <div className="flex flex-col items-center gap-1 text-center">
           <p className="text-sm opacity-60">Nº {pokemon.id}</p>
           <h1 className="font-display text-3xl tracking-wide uppercase">{pokemon.nameEs}</h1>
           <p className="opacity-70">
@@ -96,7 +96,7 @@ export function PokemonPage() {
               (entry) =>
                 entry.type && (
                   <div key={entry.type.id}>
-                    <h3 className="mb-2 text-sm uppercase opacity-70">
+                    <h3 className="mb-2 text-sm uppercase opacity-70 font-display">
                       Movimientos de tipo {entry.type.nameEs}
                     </h3>
                     <EffectivenessGrid groups={entry.groups} />
