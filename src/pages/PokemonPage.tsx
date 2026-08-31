@@ -1,16 +1,17 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
-import { EffectivenessGrid } from '../components/EffectivenessGrid'
-import { NatureTips } from '../components/NatureTips'
-import { StatRangeTable } from '../components/StatRange'
-import { TypeBadge } from '../components/TypeBadge'
-import { useDataset } from '../data/pokedexContext'
-import { findByName } from '../data/search'
-import { artworkUrl } from '../data/sprites'
-import { suggestNatures } from '../domain/nature'
-import { classify } from '../domain/role'
-import { baseStatTotal, statRanges } from '../domain/stats'
-import { DEFENSIVE_ORDER, OFFENSIVE_ORDER } from '../domain/typeChart'
+import { EffectivenessGrid } from '@/components/EffectivenessGrid'
+import { NatureTips } from '@/components/NatureTips'
+import { StatRangeTable } from '@/components/StatRange'
+import { TypeBadge } from '@/components/TypeBadge'
+import { useDataset } from '@/data/pokedexContext'
+import { findByName } from '@/data/search'
+import { artworkUrl } from '@/data/sprites'
+import { suggestNatures } from '@/domain/nature'
+import { classify } from '@/domain/role'
+import { baseStatTotal, statRanges } from '@/domain/stats'
+import { DEFENSIVE_ORDER, OFFENSIVE_ORDER } from '@/domain/typeChart'
+import { capitalize } from '@/utils/texts.utils'
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -76,7 +77,7 @@ export function PokemonPage() {
           <p className="text-sm opacity-60">Nº {pokemon.id}</p>
           <h1 className="font-display text-3xl tracking-wide uppercase">{pokemon.nameEs}</h1>
           <p className="opacity-70">
-            {pokemon.name} · {pokemon.genus}
+            {capitalize(pokemon.name)} · {pokemon.genus}
           </p>
           <ul className="mt-2 flex gap-2">
             {analysis.types.map((type) => (
