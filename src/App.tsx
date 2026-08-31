@@ -32,15 +32,23 @@ function DatasetGate() {
 function Layout() {
   return (
     <>
-      <header className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-6">
-        <Link to="/" className="font-display flex items-center gap-3 text-3xl tracking-wide">
+      {/* En movil es una rejilla de tres columnas con los lados iguales: es lo
+          unico que centra el titulo de verdad, sin depender de que el boton de
+          menu y el de tema midan lo mismo. En escritorio vuelve a ser la fila de
+          siempre. relative, ademas, ancla el panel del menu al borde inferior. */}
+      <header className="relative mx-auto grid max-w-4xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-6 sm:flex sm:gap-4">
+        <AppMenu />
+        <Link
+          to="/"
+          // order-first: en el DOM va detras del menu, que es quien ocupa la
+          // primera columna en movil; en escritorio el logo manda y va delante.
+          className="font-display flex items-center gap-3 text-3xl tracking-wide sm:order-first"
+        >
           <GengatteMark className="h-9 w-9 shrink-0" />
           Gengatte
         </Link>
-        <div className="flex flex-wrap items-center gap-4">
-          <AppMenu />
-          <ThemeToggle />
-        </div>
+        {/* justify-self solo lo entiende la rejilla: en escritorio no estorba. */}
+        <ThemeToggle className="justify-self-end" />
       </header>
 
       <main className="mx-auto max-w-4xl px-4 pb-12">

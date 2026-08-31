@@ -96,3 +96,26 @@ body {
     transform: translateY(-0.25rem);
   }
 }
+
+/*
+ * Entrada del panel del menu en movil.
+ *
+ * El panel pasa de display:none a flex, y eso no es interpolable: no hay
+ * transicion posible, solo una animacion de entrada. Al cerrar desaparece de
+ * golpe, que en un desplegable de navegacion no se echa en falta.
+ *
+ * Reaprovecha el keyframe del acordeon: es el mismo gesto, algo que baja
+ * apareciendo desde arriba.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .menu-panel {
+    animation: accordion-reveal 160ms ease both;
+  }
+
+  /* En escritorio la lista no es un panel, es la fila de siempre: no entra. */
+  @media (width >= 40rem) {
+    .menu-panel {
+      animation: none;
+    }
+  }
+}
