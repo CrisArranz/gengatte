@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router'
 import { AppMenu } from './components/AppMenu'
+import { ThemeToggle } from './components/ThemeToggle'
 import { PokedexProvider } from './data/PokedexProvider'
 import { useDatasetState } from './data/pokedexContext'
 import { FaqPage } from './pages/FaqPage'
@@ -34,7 +35,10 @@ function Layout() {
         <Link to="/" className="text-2xl tracking-wide">
           Gengatte
         </Link>
-        <AppMenu />
+        <div className="flex flex-wrap items-center gap-4">
+          <AppMenu />
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-4 pb-12">

@@ -1,0 +1,11 @@
+{
+  "name": "gengatte",
+  "description": "Pokedex analitica: tipos, debilidades, fortalezas, estadisticas y naturaleza optima",
+  "repository": "https://github.com/CrisArranz/gengatte",
+  "keywords": ["pokemon", "pokedex", "react", "vite"],
+  "stack": "heroku-24",
+  "buildpacks": [{ "url": "heroku/nodejs" }],
+  "env": {
+    "NODE_ENV": { "value": "production" }
+  }
+}

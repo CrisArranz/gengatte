@@ -9,6 +9,23 @@
       content="Consulta tipos, debilidades, fortalezas, estadisticas maximas y naturaleza optima de cualquier Pokemon."
     />
     <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
+    <script>
+      // Se ejecuta antes del primer pintado: sin esto, una recarga en modo
+      // oscuro mostraria un fogonazo blanco hasta que React montara.
+      // La clave debe coincidir con THEME_STORAGE_KEY de src/theme/useTheme.ts.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('gengatte:theme')
+          var dark =
+            stored === 'dark' ||
+            (stored === null && matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.toggle('dark', dark)
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (error) {
+          // Almacenamiento bloqueado: se queda en claro, que es el valor por defecto.
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
