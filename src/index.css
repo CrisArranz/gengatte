@@ -33,3 +33,66 @@
 body {
   @apply bg-white font-sans text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
 }
+
+/*
+ * Apertura del acordeon de las FAQs.
+ *
+ * Un <details> no se puede animar con utilidades de Tailwind: al cerrarse, el
+ * navegador oculta el contenido de golpe, asi que no hay estado intermedio que
+ * interpolar. Hacen falta dos piezas de CSS que Tailwind no expresa.
+ *
+ * Todo va dentro de prefers-reduced-motion: quien pide menos movimiento sigue
+ * viendo el acordeon abrir y cerrar, solo que sin transicion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * Capa 1, la buena: ::details-content es la caja que el navegador genera
+   * para lo que hay bajo el <summary>, y es lo unico a lo que se le puede
+   * animar la altura. Chrome 131+ y Safari 18.4+; donde no exista, esta regla
+   * entera se descarta y el contenido aparece de golpe, como antes.
+   *
+   * `interpolate-size` es lo que permite transicionar HACIA `auto`: sin el,
+   * animar de 0 a una altura desconocida es imposible y hay que inventarse un
+   * max-height a ojo, que o corta el contenido o deja la animacion muerta.
+   *
+   * `allow-discrete` encadena content-visibility, que no es interpolable: sin
+   * el, el contenido desaparece en el primer fotograma al cerrar y la altura
+   * se anima sobre una caja ya vacia.
+   */
+  :root {
+    interpolate-size: allow-keywords;
+  }
+
+  .accordion::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size 240ms ease,
+      opacity 180ms ease,
+      content-visibility 240ms allow-discrete;
+  }
+
+  .accordion[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+
+  /*
+   * Capa 2, el respaldo: en Firefox no hay ::details-content, asi que no se
+   * puede animar la altura. Se anima solo la entrada del contenido, que es lo
+   * que si se puede: al cerrar sigue desapareciendo de golpe.
+   */
+  @supports not selector(::details-content) {
+    .accordion[open] > :not(summary) {
+      animation: accordion-reveal 200ms ease both;
+    }
+  }
+}
+
+@keyframes accordion-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
