@@ -11,7 +11,7 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
   return (
     <Link
       to={`/pokemon/${pokemon.name}`}
-      className="flex w-40 flex-col items-center gap-2 border-2 border-current p-3 text-center"
+      className="flex w-40 flex-col items-center gap-2 p-3 text-center transition-all duration-300"
     >
       <img
         src={spriteUrl(pokemon.id)}
@@ -20,9 +20,9 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
         height={96}
         loading="lazy"
         decoding="async"
-        className="h-24 w-24 border border-current object-contain"
+        className="h-24 w-24 hover:scale-150 transition-transform duration-350"
       />
-      <span className="text-sm tracking-wide uppercase">{pokemon.nameEs}</span>
+      <span className="font-display text-sm tracking-wide uppercase">{pokemon.nameEs}</span>
       <span className="text-xs opacity-60">Nº {pokemon.id}</span>
     </Link>
   )

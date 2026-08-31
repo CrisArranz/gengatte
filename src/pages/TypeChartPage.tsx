@@ -42,16 +42,17 @@ export function TypeChartPage() {
                 <th
                   key={type.id}
                   scope="col"
-                  className={`p-1 ${focus?.column === column ? 'underline underline-offset-4' : ''}`}
+                  className={`p-1 ${focus?.column === column ? 'underline underline-offset-4' : ''} relative`}
                 >
                   <img
-                    src={typeIconUrl(type.id)}
+                    src={typeIconUrl(type.id, true)}
                     alt={type.nameEs}
+                    aria-label={type.nameEs}
                     width={32}
                     height={14}
                     loading="lazy"
                     decoding="async"
-                    className="mx-auto h-3.5 w-8 object-contain"
+                    className="mx-auto w-28 object-contain hover:after:block hover:after:absolute hover:after:attr(alt) hover:after:-top-5 hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:rounded-sm hover:after:bg-slate-950 hover:after:px-1 hover:after:text-xs hover:after:text-white"
                   />
                 </th>
               ))}
@@ -81,7 +82,7 @@ export function TypeChartPage() {
                       onFocus={() => setFocus({ row, column })}
                       onMouseLeave={() => setFocus(null)}
                       onBlur={() => setFocus(null)}
-                      className={`border border-current p-1 ${highlighted ? 'font-bold' : ''}`}
+                      className={`border border-current p-1 ${highlighted ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
                     >
                       <span aria-hidden="true">{cell.symbol}</span>
                       <span className="sr-only">

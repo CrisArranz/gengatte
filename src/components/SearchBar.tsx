@@ -24,7 +24,7 @@ export function SearchBar({ value, onChange, resultCount }: SearchBarProps) {
           autoComplete="off"
           value={value}
           onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
-          placeholder="Gengar"
+          placeholder="Busca tu pokémon por nombre o número"
           aria-describedby={statusId}
           className="w-full rounded-sm border-2 border-current bg-transparent px-4 py-2 outline-none focus-visible:ring-2"
         />

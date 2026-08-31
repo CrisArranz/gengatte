@@ -14,5 +14,5 @@ export const artworkUrl = (id: number): string =>
 export const spriteUrl = (id: number): string => `${SPRITES}/pokemon/${id}.png`
 
 /** Icono de tipo para las cabeceras de la tabla de efectividades. */
-export const typeIconUrl = (typeId: number): string =>
-  `${SPRITES}/types/generation-ix/scarlet-violet/${typeId}.png`
+export const typeIconUrl = (typeId: number, small?: boolean): string =>
+  `${SPRITES}/types/generation-ix/scarlet-violet${small ? '/small' : ''}/${typeId}.png`

@@ -15,7 +15,7 @@ import { DEFENSIVE_ORDER, OFFENSIVE_ORDER } from '../domain/typeChart'
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="border-2 border-current p-4">
-      <h2 className="mb-3 text-lg uppercase">{title}</h2>
+      <h2 className="font-display mb-3 text-lg uppercase">{title}</h2>
       {children}
     </section>
   )
@@ -70,18 +70,18 @@ export function PokemonPage() {
           width={192}
           height={192}
           decoding="async"
-          className="h-48 w-48 border-2 border-current object-contain"
+          className="h-48 w-48 object-contain"
         />
         <div>
           <p className="text-sm opacity-60">Nº {pokemon.id}</p>
-          <h1 className="text-3xl tracking-wide uppercase">{pokemon.nameEs}</h1>
+          <h1 className="font-display text-3xl tracking-wide uppercase">{pokemon.nameEs}</h1>
           <p className="opacity-70">
             {pokemon.name} · {pokemon.genus}
           </p>
           <ul className="mt-2 flex gap-2">
             {analysis.types.map((type) => (
               <li key={type.id}>
-                <TypeBadge type={type} withIcon />
+                <TypeBadge type={type} withIcon dimensions={{ width: 128, height: 48 }} />
               </li>
             ))}
           </ul>
@@ -90,8 +90,6 @@ export function PokemonPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <Panel title="Fortalezas">
-          {/* Los tipos del atacante no se multiplican entre si: cada uno va por
-              separado, y la cobertura combinada es el maximo de ambos. */}
           <div className="space-y-4">
             {analysis.perType.map(
               (entry) =>
@@ -103,13 +101,6 @@ export function PokemonPage() {
                     <EffectivenessGrid groups={entry.groups} />
                   </div>
                 ),
-            )}
-
-            {analysis.perType.length > 1 && (
-              <div>
-                <h3 className="mb-2 text-sm uppercase opacity-70">Mejor cobertura combinada</h3>
-                <EffectivenessGrid groups={analysis.coverage} />
-              </div>
             )}
           </div>
         </Panel>
