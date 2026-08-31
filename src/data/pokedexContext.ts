@@ -11,9 +11,7 @@ export interface Dataset {
 }
 
 export type DatasetState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; data: Dataset }
+  { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: Dataset }
 
 export const PokedexContext = createContext<DatasetState>({ status: 'loading' })
 

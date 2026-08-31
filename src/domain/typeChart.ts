@@ -101,7 +101,9 @@ export class TypeChart {
       .map((multiplier) => ({
         multiplier,
         label: MULTIPLIER_LABEL[multiplier],
-        types: effects.filter((effect) => effect.multiplier === multiplier).map((effect) => effect.type),
+        types: effects
+          .filter((effect) => effect.multiplier === multiplier)
+          .map((effect) => effect.type),
       }))
       .filter((group) => group.types.length > 0)
   }

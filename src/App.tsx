@@ -1,22 +1,19 @@
-import { useMemo, useState } from 'react'
-import { PokemonCard } from './components/PokemonCard'
-import { SearchBar } from './components/SearchBar'
+import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router'
+import { AppMenu } from './components/AppMenu'
 import { PokedexProvider } from './data/PokedexProvider'
 import { useDatasetState } from './data/pokedexContext'
-import { search } from './data/search'
+import { FaqPage } from './pages/FaqPage'
+import { HomePage } from './pages/HomePage'
+import { NotFoundPage } from './pages/NotFoundPage'
+import { PokemonPage } from './pages/PokemonPage'
+import { TypeChartPage } from './pages/TypeChartPage'
 
 /**
- * Fase 3: buscador funcional sobre el dataset local.
- * Las rutas y la ficha completa llegan en la fase 4 (PLAN.md, seccion 6).
+ * Todas las paginas leen el dataset, asi que la espera se resuelve una vez
+ * aqui: por debajo de esta puerta `useDataset()` ya no puede fallar.
  */
-function Home() {
+function DatasetGate() {
   const state = useDatasetState()
-  const [query, setQuery] = useState('')
-
-  const results = useMemo(
-    () => (state.status === 'ready' ? search(state.data.index, query) : []),
-    [state, query],
-  )
 
   if (state.status === 'loading') return <p className="py-8 text-center">Cargando Pokédex…</p>
   if (state.status === 'error') {
@@ -27,19 +24,22 @@ function Home() {
     )
   }
 
+  return <Outlet />
+}
+
+function Layout() {
   return (
     <>
-      <SearchBar value={query} onChange={setQuery} resultCount={results.length} />
+      <header className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 py-6">
+        <Link to="/" className="text-2xl tracking-wide">
+          Gengatte
+        </Link>
+        <AppMenu />
+      </header>
 
-      <div className="mt-6 flex flex-wrap justify-center gap-4">
-        {results.map((pokemon) => (
-          <PokemonCard key={pokemon.id} pokemon={pokemon} />
-        ))}
-      </div>
-
-      {query.trim() !== '' && results.length === 0 && (
-        <p className="mt-6 text-center opacity-70">Ningún Pokémon coincide con «{query}».</p>
-      )}
+      <main className="mx-auto max-w-4xl px-4 pb-12">
+        <Outlet />
+      </main>
     </>
   )
 }
@@ -47,10 +47,19 @@ function Home() {
 export default function App() {
   return (
     <PokedexProvider>
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="mb-6 text-center text-3xl font-normal tracking-wide">Gengatte</h1>
-        <Home />
-      </main>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route element={<DatasetGate />}>
+              <Route index element={<HomePage />} />
+              <Route path="pokemon/:name" element={<PokemonPage />} />
+              <Route path="tabla-tipos" element={<TypeChartPage />} />
+              <Route path="faq" element={<FaqPage />} />
+            </Route>
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </PokedexProvider>
   )
 }

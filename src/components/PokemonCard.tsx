@@ -1,17 +1,16 @@
+import { Link } from 'react-router'
 import type { Pokemon } from '../data/schema'
 import { spriteUrl } from '../data/sprites'
 
 interface PokemonCardProps {
   pokemon: Pokemon
-  onSelect?: (pokemon: Pokemon) => void
 }
 
 /** Tarjeta de resultado del boceto 1: imagen encuadrada y nombre en mayusculas. */
-export function PokemonCard({ pokemon, onSelect }: PokemonCardProps) {
+export function PokemonCard({ pokemon }: PokemonCardProps) {
   return (
-    <button
-      type="button"
-      onClick={() => onSelect?.(pokemon)}
+    <Link
+      to={`/pokemon/${pokemon.name}`}
       className="flex w-40 flex-col items-center gap-2 border-2 border-current p-3 text-center"
     >
       <img
@@ -25,6 +24,6 @@ export function PokemonCard({ pokemon, onSelect }: PokemonCardProps) {
       />
       <span className="text-sm tracking-wide uppercase">{pokemon.nameEs}</span>
       <span className="text-xs opacity-60">Nº {pokemon.id}</span>
-    </button>
+    </Link>
   )
 }
