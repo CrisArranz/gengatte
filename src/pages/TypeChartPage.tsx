@@ -25,7 +25,7 @@ export function TypeChartPage() {
       </p>
 
       {/* 18 columnas no caben en 360 px: el desplazamiento horizontal es imprescindible. */}
-      <div className="overflow-x-none">
+      <div className="overflow-x-auto">
         <table className="border-collapse text-center text-xs">
           <caption className="mb-2 text-left text-sm">
             ← Pokémon oponente → (columnas) · Tipo de ataque ↓ (filas)
