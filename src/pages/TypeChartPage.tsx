@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useDataset } from '../data/pokedexContext'
-import { typeIconUrl } from '../data/sprites'
+import { useDataset } from '@/data/pokedexContext'
+import { TypeIcon } from '@/components/TypeIcon'
 
 /** Simbolo y texto accesible de cada factor. Nunca solo color (PLAN.md 6.3). */
 function cellFor(factor: number): { symbol: string; label: string } {
@@ -42,17 +42,17 @@ export function TypeChartPage() {
                 <th
                   key={type.id}
                   scope="col"
-                  className={`p-1 ${focus?.column === column ? 'underline underline-offset-4' : ''} relative`}
+                  className={`p-1 ${focus?.column === column ? 'underline underline-offset-4' : ''}`}
                 >
-                  <img
-                    src={typeIconUrl(type.id, true)}
-                    alt={type.nameEs}
-                    aria-label={type.nameEs}
-                    width={32}
-                    height={14}
-                    loading="lazy"
-                    decoding="async"
-                    className="mx-auto w-28 object-contain hover:after:block hover:after:absolute hover:after:attr(alt) hover:after:-top-5 hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:rounded-sm hover:after:bg-slate-950 hover:after:px-1 hover:after:text-xs hover:after:text-white"
+                  {/* Con la columna enfocada el tooltip se queda fijo, para que
+                      quien navega con el teclado tambien sepa en cual esta. */}
+                  <TypeIcon
+                    type={type}
+                    small
+                    width={36}
+                    height={36}
+                    className="h-9 w-9"
+                    pinned={focus?.column === column}
                   />
                 </th>
               ))}

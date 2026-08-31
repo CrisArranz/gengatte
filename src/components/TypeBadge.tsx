@@ -1,5 +1,5 @@
-import { typeIconUrl } from '../data/sprites'
-import type { TypeInfo } from '../data/schema'
+import type { TypeInfo } from '@/data/schema'
+import { TypeIcon } from '@/components/TypeIcon'
 
 interface TypeBadgeProps {
   type: TypeInfo
@@ -10,19 +10,13 @@ interface TypeBadgeProps {
 
 export function TypeBadge({ type, withIcon = false, isSmall = false, dimensions }: TypeBadgeProps) {
   return (
-    <span
-      className={`inline-flex items-center gap-2 py-0.5 text-xs ${isSmall && 'hover:scale-125 transition-transform'}`}
-    >
+    <span className="inline-flex items-center gap-2 py-0.5 text-xs">
       {withIcon && (
-        <img
-          src={typeIconUrl(type.id, isSmall)}
-          alt={type.nameEs}
-          aria-label={type.nameEs}
+        <TypeIcon
+          type={type}
+          small={isSmall}
           width={dimensions?.width ?? 32}
           height={dimensions?.height ?? 14}
-          loading="lazy"
-          decoding="async"
-          className="object-contain"
         />
       )}
     </span>
