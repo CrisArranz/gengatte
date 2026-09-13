@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
+import { ConfirmRemoveDialog } from '@/components/ConfirmRemoveDialog'
 import { TypeIcon } from '@/components/TypeIcon'
 import type { Pokemon, TypeInfo } from '@/data/schema'
 import { artworkUrl } from '@/data/sprites'
@@ -13,17 +15,28 @@ export function TeamSlotCard({
   weaknesses: TypeInfo[]
 }) {
   const { remove } = useTeam()
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
     <div className="relative flex flex-col items-center gap-2 border-2 border-current p-3 text-center">
       <button
         type="button"
-        onClick={() => remove(pokemon.id)}
+        onClick={() => setConfirmOpen(true)}
         aria-label={`Quitar a ${pokemon.nameEs} del equipo`}
         className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full border border-current/40 text-xs hover:bg-current/10"
       >
         <span aria-hidden="true">✕</span>
       </button>
+
+      <ConfirmRemoveDialog
+        open={confirmOpen}
+        pokemonName={pokemon.nameEs}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          remove(pokemon.id)
+          setConfirmOpen(false)
+        }}
+      />
 
       <Link to={`/pokemon/${pokemon.name}`} className="flex flex-col items-center gap-1">
         <img

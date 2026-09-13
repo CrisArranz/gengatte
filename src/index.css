@@ -119,3 +119,22 @@ body {
     }
   }
 }
+
+/*
+ * Confirmacion al anadir un Pokemon al equipo: el boton muestra un check un
+ * instante antes de asentarse en su estado normal. Solo la entrada anima,
+ * igual que el resto de gestos de la app: con menos movimiento el check
+ * simplemente aparece.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .team-added-check {
+    animation: check-pop 220ms ease-out;
+  }
+}
+
+@keyframes check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
