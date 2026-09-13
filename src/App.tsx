@@ -4,10 +4,12 @@ import { GengatteMark } from '@/components/GengatteMark'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { PokedexProvider } from '@/data/PokedexProvider'
 import { useDatasetState } from '@/data/pokedexContext'
+import { TeamProvider } from '@/data/TeamProvider'
 import { FaqPage } from '@/pages/FaqPage'
 import { HomePage } from '@/pages/HomePage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PokemonPage } from '@/pages/PokemonPage'
+import { TeamPage } from '@/pages/TeamPage'
 import { TypeChartPage } from '@/pages/TypeChartPage'
 
 /**
@@ -61,19 +63,22 @@ function Layout() {
 export default function App() {
   return (
     <PokedexProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route element={<DatasetGate />}>
-              <Route index element={<HomePage />} />
-              <Route path="pokemon/:name" element={<PokemonPage />} />
-              <Route path="tabla-tipos" element={<TypeChartPage />} />
-              <Route path="faq" element={<FaqPage />} />
+      <TeamProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route element={<DatasetGate />}>
+                <Route index element={<HomePage />} />
+                <Route path="pokemon/:name" element={<PokemonPage />} />
+                <Route path="equipo" element={<TeamPage />} />
+                <Route path="tabla-tipos" element={<TypeChartPage />} />
+                <Route path="faq" element={<FaqPage />} />
+              </Route>
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </TeamProvider>
     </PokedexProvider>
   )
 }

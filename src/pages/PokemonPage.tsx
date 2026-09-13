@@ -1,9 +1,12 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { EffectivenessGrid } from '@/components/EffectivenessGrid'
 import { NatureTips } from '@/components/NatureTips'
+import { Panel } from '@/components/Panel'
 import { StatRangeTable } from '@/components/StatRange'
+import { TeamButton } from '@/components/TeamButton'
 import { TypeBadge } from '@/components/TypeBadge'
+import type { Pokemon } from '@/data/schema'
 import { useDataset } from '@/data/pokedexContext'
 import { findByName } from '@/data/search'
 import { artworkUrl } from '@/data/sprites'
@@ -13,12 +16,46 @@ import { baseStatTotal, statRanges } from '@/domain/stats'
 import { DEFENSIVE_ORDER, OFFENSIVE_ORDER } from '@/domain/typeChart'
 import { capitalize } from '@/utils/texts.utils'
 
-function Panel({ title, children }: { title: string; children: ReactNode }) {
+/**
+ * Miniatura de un Pokemon vecino (anterior/siguiente en la Pokedex). El
+ * nombre solo aparece al pasar el raton o el foco, como una tooltip.
+ */
+function NeighborLink({
+  pokemon,
+  direction,
+}: {
+  pokemon: Pokemon
+  direction: 'previous' | 'next'
+}) {
+  const label = capitalize(pokemon.name)
+
   return (
-    <section className="border-2 border-current p-4">
-      <h2 className="font-display mb-3 text-lg uppercase">{title}</h2>
-      {children}
-    </section>
+    <Link
+      to={`/pokemon/${pokemon.name}`}
+      className="group relative flex items-center gap-1 p-1 opacity-70 hover:opacity-100"
+      aria-label={`${direction === 'previous' ? 'Pokémon anterior' : 'Pokémon siguiente'}: ${label}`}
+    >
+      {direction === 'previous' && <span aria-hidden="true">←</span>}
+      <img
+        src={artworkUrl(pokemon.id)}
+        alt=""
+        width={40}
+        height={40}
+        decoding="async"
+        className="h-10 w-10 object-contain"
+      />
+      {direction === 'next' && <span aria-hidden="true">→</span>}
+      <span
+        className={[
+          'pointer-events-none absolute top-full z-10 mt-1 rounded border border-current/25',
+          'bg-white px-2 py-1 text-xs whitespace-nowrap opacity-0 dark:bg-slate-950',
+          'transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100',
+          direction === 'previous' ? 'left-0' : 'right-0',
+        ].join(' ')}
+      >
+        {label}
+      </span>
+    </Link>
   )
 }
 
@@ -28,6 +65,16 @@ export function PokemonPage() {
   const { index, chart, pokedex, reference } = useDataset()
 
   const pokemon = useMemo(() => findByName(index, name), [index, name])
+
+  // pokedex.pokemon ya viene ordenado por numero de Pokedex.
+  const { previous, next } = useMemo(() => {
+    if (!pokemon) return { previous: undefined, next: undefined }
+    const position = pokedex.pokemon.findIndex((entry) => entry.id === pokemon.id)
+    return {
+      previous: position > 0 ? pokedex.pokemon[position - 1] : undefined,
+      next: position < pokedex.pokemon.length - 1 ? pokedex.pokemon[position + 1] : undefined,
+    }
+  }, [pokemon, pokedex])
 
   // Todo el calculo depende solo del Pokemon: se memoiza junto.
   const analysis = useMemo(() => {
@@ -40,10 +87,6 @@ export function PokemonPage() {
       types,
       defense: chart.group(chart.defensiveProfile(pokemon.types), DEFENSIVE_ORDER),
       coverage: chart.group(chart.bestCoverage(pokemon.types), OFFENSIVE_ORDER),
-      perType: pokemon.types.map((type) => ({
-        type: chart.typeByName(type),
-        groups: chart.group(chart.offensiveProfile(type), OFFENSIVE_ORDER),
-      })),
       ranges: statRanges(pokemon),
       total: baseStatTotal(pokemon),
       role: classify(pokemon, pokedex.percentiles),
@@ -64,6 +107,17 @@ export function PokemonPage() {
 
   return (
     <article className="space-y-6">
+      <nav className="flex items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-1 text-sm opacity-70 hover:opacity-100">
+          <span aria-hidden="true">←</span> Volver
+        </Link>
+
+        <div className="flex items-center gap-2">
+          {previous && <NeighborLink pokemon={previous} direction="previous" />}
+          {next && <NeighborLink pokemon={next} direction="next" />}
+        </div>
+      </nav>
+
       <header className="flex flex-wrap items-center justify-center gap-6">
         <img
           src={artworkUrl(pokemon.id)}
@@ -86,26 +140,15 @@ export function PokemonPage() {
               </li>
             ))}
           </ul>
+          <TeamButton
+            pokemonId={pokemon.id}
+            pokemonName={pokemon.nameEs}
+            className="mt-2"
+          />
         </div>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Panel title="Fortalezas">
-          <div className="space-y-4">
-            {analysis.perType.map(
-              (entry) =>
-                entry.type && (
-                  <div key={entry.type.id}>
-                    <h3 className="mb-2 text-sm uppercase opacity-70 font-display">
-                      Movimientos de tipo {entry.type.nameEs}
-                    </h3>
-                    <EffectivenessGrid groups={entry.groups} />
-                  </div>
-                ),
-            )}
-          </div>
-        </Panel>
-
         <Panel title="Debilidades">
           <EffectivenessGrid groups={analysis.defense} />
         </Panel>
@@ -118,7 +161,7 @@ export function PokemonPage() {
           </p>
         </Panel>
 
-        <Panel title="Tips">
+        <Panel title="Tips" className="md:col-span-2">
           <NatureTips role={analysis.role} suggestions={analysis.natures} />
         </Panel>
       </div>
