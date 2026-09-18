@@ -6,11 +6,13 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { useEffect, useMemo, useRef } from 'react'
+import { toPng } from 'html-to-image'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { BenchSlotCard } from '@/components/BenchSlotCard'
 import { Panel } from '@/components/Panel'
 import { TeamDragSlot } from '@/components/TeamDragSlot'
+import { TeamShareCard } from '@/components/TeamShareCard'
 import { TeamSlotCard } from '@/components/TeamSlotCard'
 import { TypeIcon } from '@/components/TypeIcon'
 import { useDataset } from '@/data/pokedexContext'
@@ -94,6 +96,32 @@ export function TeamPage() {
     [bench, pokedex],
   )
 
+  const teamForShare = useMemo(
+    () => team.map((id) => findPokemon(id, pokedex.pokemon)),
+    [team, pokedex],
+  )
+  const benchForShare = useMemo(
+    () => bench.map((id) => findPokemon(id, pokedex.pokemon)),
+    [bench, pokedex],
+  )
+  const shareCardRef = useRef<HTMLDivElement>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  async function handleDownload() {
+    const node = shareCardRef.current
+    if (!node) return
+    setIsDownloading(true)
+    try {
+      const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      const link = document.createElement('a')
+      link.download = 'mi-equipo-gengatte.png'
+      link.href = dataUrl
+      link.click()
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   const weaknessesByMember = useMemo(
     () => new Map(members.map((pokemon) => [pokemon.id, memberWeaknesses(chart, pokemon.types)])),
     [members, chart],
@@ -131,7 +159,25 @@ export function TeamPage() {
         <p className="mt-1 text-xs opacity-60">
           Arrastra una ficha a otro hueco para reordenar el equipo o el banquillo.
         </p>
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className="mt-3 border-2 border-current px-3 py-1.5 text-sm hover:bg-current/10 disabled:opacity-40"
+        >
+          {isDownloading ? 'Generando imagen…' : 'Descargar imagen del equipo'}
+        </button>
       </header>
+
+      {/*
+        Fuera de pantalla pero en el DOM: html-to-image necesita el nodo
+        renderizado (con las imagenes reales cargando) para poder capturarlo.
+        Con colores fijos y sin controles, para que la imagen descargada solo
+        muestre a los 10 Pokemon, sin las debilidades ni la interfaz.
+      */}
+      <div aria-hidden="true" className="fixed top-0 left-[-9999px]">
+        <TeamShareCard ref={shareCardRef} team={teamForShare} bench={benchForShare} />
+      </div>
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
