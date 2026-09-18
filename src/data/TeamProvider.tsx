@@ -1,75 +1,148 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { TeamContext } from '@/data/teamContext'
+import { TeamContext, type SlotGroup, type SlotRef } from '@/data/teamContext'
 import { BENCH_SIZE, MAX_TEAM_SIZE } from '@/domain/team'
 
 const STORAGE_KEY = 'gengatte:team'
+
+interface SlotState {
+  team: (number | null)[]
+  bench: (number | null)[]
+}
+
+function emptySlots(size: number): (number | null)[] {
+  return Array.from({ length: size }, () => null)
+}
+
+function emptyState(): SlotState {
+  return { team: emptySlots(MAX_TEAM_SIZE), bench: emptySlots(BENCH_SIZE) }
+}
 
 function toIdList(value: unknown): number[] {
   if (!Array.isArray(value)) return []
   return value.filter((entry): entry is number => typeof entry === 'number')
 }
 
-interface StoredTeam {
-  ids: number[]
-  benchIds: number[]
+/** Coloca una lista compacta de ids en huecos fijos, en orden, rellenando el resto con null. */
+function toSlots(ids: number[], size: number): (number | null)[] {
+  const slots = emptySlots(size)
+  ids.slice(0, size).forEach((id, index) => {
+    slots[index] = id
+  })
+  return slots
 }
 
-function readStoredTeam(): StoredTeam {
+/** Igual que toSlots, pero a partir de un array que ya puede traer huecos (null/otros). */
+function toFixedSlots(value: unknown, size: number): (number | null)[] {
+  if (!Array.isArray(value)) return emptySlots(size)
+  const slots = emptySlots(size)
+  for (let index = 0; index < size; index++) {
+    const entry = value[index]
+    slots[index] = typeof entry === 'number' ? entry : null
+  }
+  return slots
+}
+
+function readStoredTeam(): SlotState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { ids: [], benchIds: [] }
+    if (!raw) return emptyState()
     const parsed: unknown = JSON.parse(raw)
 
-    // Formato antiguo: un array plano de ids de titulares, sin banquillo.
-    if (Array.isArray(parsed)) return { ids: toIdList(parsed), benchIds: [] }
+    // Formato original: array plano de ids de titulares, sin banquillo ni posiciones.
+    if (Array.isArray(parsed)) {
+      return { team: toSlots(toIdList(parsed), MAX_TEAM_SIZE), bench: emptySlots(BENCH_SIZE) }
+    }
 
     if (parsed && typeof parsed === 'object') {
       const record = parsed as Record<string, unknown>
-      return { ids: toIdList(record.ids), benchIds: toIdList(record.benchIds) }
+
+      // Formato con posiciones fijas (el actual).
+      if (Array.isArray(record.team) || Array.isArray(record.bench)) {
+        return {
+          team: toFixedSlots(record.team, MAX_TEAM_SIZE),
+          bench: toFixedSlots(record.bench, BENCH_SIZE),
+        }
+      }
+
+      // Formato intermedio: {ids, benchIds} compactos, sin posiciones fijas.
+      return {
+        team: toSlots(toIdList(record.ids), MAX_TEAM_SIZE),
+        bench: toSlots(toIdList(record.benchIds), BENCH_SIZE),
+      }
     }
 
-    return { ids: [], benchIds: [] }
+    return emptyState()
   } catch {
-    return { ids: [], benchIds: [] }
+    return emptyState()
   }
 }
 
-/** Equipo de hasta seis titulares y cuatro reservas, recordado en localStorage por navegador. */
+/** Equipo de seis huecos titulares y cuatro de banquillo, recordado en localStorage por navegador. */
 export function TeamProvider({ children }: { children: ReactNode }) {
-  const [{ ids, benchIds }, setTeam] = useState<StoredTeam>(readStoredTeam)
+  const [state, setState] = useState<SlotState>(readStoredTeam)
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ids, benchIds }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     } catch {
       // Modo privado o almacenamiento bloqueado: el equipo sigue funcionando,
       // solo que no se recuerda en la proxima visita.
     }
-  }, [ids, benchIds])
+  }, [state])
 
   const add = useCallback((id: number) => {
-    setTeam((current) => {
-      if (current.ids.includes(id) || current.benchIds.includes(id)) return current
-      if (current.ids.length < MAX_TEAM_SIZE) {
-        return { ...current, ids: [...current.ids, id] }
+    setState((current) => {
+      if (current.team.includes(id) || current.bench.includes(id)) return current
+
+      const teamIndex = current.team.indexOf(null)
+      if (teamIndex !== -1) {
+        const team = [...current.team]
+        team[teamIndex] = id
+        return { ...current, team }
       }
-      if (current.benchIds.length < BENCH_SIZE) {
-        return { ...current, benchIds: [...current.benchIds, id] }
+
+      const benchIndex = current.bench.indexOf(null)
+      if (benchIndex !== -1) {
+        const bench = [...current.bench]
+        bench[benchIndex] = id
+        return { ...current, bench }
       }
+
       return current
     })
   }, [])
 
   const remove = useCallback((id: number) => {
-    setTeam((current) => ({
-      ids: current.ids.filter((existing) => existing !== id),
-      benchIds: current.benchIds.filter((existing) => existing !== id),
+    setState((current) => ({
+      team: current.team.map((slot) => (slot === id ? null : slot)),
+      bench: current.bench.map((slot) => (slot === id ? null : slot)),
     }))
   }, [])
 
-  const has = useCallback((id: number) => ids.includes(id) || benchIds.includes(id), [ids, benchIds])
+  const move = useCallback((from: SlotRef, to: SlotRef) => {
+    if (from.group === to.group && from.index === to.index) return
+    setState((current) => {
+      const next: SlotState = { team: [...current.team], bench: [...current.bench] }
+      const source = next[from.group as SlotGroup]
+      const target = next[to.group as SlotGroup]
+      const temp = target[to.index]
+      target[to.index] = source[from.index]
+      source[from.index] = temp
+      return next
+    })
+  }, [])
 
-  const isFull = ids.length >= MAX_TEAM_SIZE && benchIds.length >= BENCH_SIZE
+  const has = useCallback(
+    (id: number) => state.team.includes(id) || state.bench.includes(id),
+    [state],
+  )
 
-  return <TeamContext value={{ ids, benchIds, isFull, has, add, remove }}>{children}</TeamContext>
+  const isFull =
+    state.team.every((slot) => slot !== null) && state.bench.every((slot) => slot !== null)
+
+  return (
+    <TeamContext value={{ team: state.team, bench: state.bench, isFull, has, add, remove, move }}>
+      {children}
+    </TeamContext>
+  )
 }

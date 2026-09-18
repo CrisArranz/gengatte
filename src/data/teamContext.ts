@@ -1,8 +1,17 @@
 import { createContext, useContext } from 'react'
 
+export type SlotGroup = 'team' | 'bench'
+
+export interface SlotRef {
+  group: SlotGroup
+  index: number
+}
+
 export interface TeamContextValue {
-  ids: number[]
-  benchIds: number[]
+  /** Titulares por posición fija; `null` es un hueco vacío. Longitud MAX_TEAM_SIZE. */
+  team: (number | null)[]
+  /** Banquillo por posición fija; `null` es un hueco vacío. Longitud BENCH_SIZE. */
+  bench: (number | null)[]
   /** Titulares y banquillo completos: ya no hay hueco para nadie más. */
   isFull: boolean
   has: (id: number) => boolean
@@ -10,6 +19,8 @@ export interface TeamContextValue {
   add: (id: number) => void
   /** Quita al Pokemon de donde esté, titulares o banquillo. */
   remove: (id: number) => void
+  /** Intercambia el contenido de dos huecos (o mueve, si el destino está vacío). */
+  move: (from: SlotRef, to: SlotRef) => void
 }
 
 export const TeamContext = createContext<TeamContextValue | undefined>(undefined)

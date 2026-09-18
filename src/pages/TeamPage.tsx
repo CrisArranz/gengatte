@@ -1,12 +1,21 @@
-import { useMemo } from 'react'
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router'
 import { BenchSlotCard } from '@/components/BenchSlotCard'
 import { Panel } from '@/components/Panel'
+import { TeamDragSlot } from '@/components/TeamDragSlot'
 import { TeamSlotCard } from '@/components/TeamSlotCard'
 import { TypeIcon } from '@/components/TypeIcon'
 import { useDataset } from '@/data/pokedexContext'
 import type { Pokemon } from '@/data/schema'
-import { useTeam } from '@/data/teamContext'
+import { useTeam, type SlotGroup, type SlotRef } from '@/data/teamContext'
 import { BENCH_SIZE, MAX_TEAM_SIZE, memberWeaknesses, teamWeaknesses } from '@/domain/team'
 
 function EmptySlot() {
@@ -37,19 +46,53 @@ function EmptyBenchSlot() {
   )
 }
 
-function toMembers(ids: number[], pokemon: Pokemon[]): Pokemon[] {
-  return ids
-    .map((id) => pokemon.find((candidate) => candidate.id === id))
-    .filter((candidate): candidate is Pokemon => candidate !== undefined)
+function parseSlotId(id: string): SlotRef {
+  const [group, index] = id.split(':')
+  return { group: group as SlotGroup, index: Number(index) }
+}
+
+function findPokemon(id: number | null, pokemon: Pokemon[]): Pokemon | undefined {
+  if (id === null) return undefined
+  return pokemon.find((candidate) => candidate.id === id)
 }
 
 export function TeamPage() {
   const { chart, pokedex } = useDataset()
-  const { ids, benchIds } = useTeam()
+  const { team, bench, move } = useTeam()
 
-  // El orden de `ids`/`benchIds` es el orden en que se añadieron: se respeta en la rejilla.
-  const members = useMemo(() => toMembers(ids, pokedex.pokemon), [ids, pokedex])
-  const benchMembers = useMemo(() => toMembers(benchIds, pokedex.pokemon), [benchIds, pokedex])
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  )
+
+  // Al soltar un arrastre sobre un hueco (un <Link>), el navegador dispara
+  // igualmente un click tras el drop, que navegaría a la ficha del Pokemon
+  // en vez de quedarse en la página con el intercambio hecho. dnd-kit intenta
+  // frenar ese click el mismo con un listener propio, pero solo detiene la
+  // propagación sin cancelar la navegación por defecto del enlace: hace
+  // falta un listener propio en window, registrado desde el montaje (antes
+  // de que exista el de dnd-kit) para llegar a tiempo de cancelarla.
+  const suppressClickRef = useRef(false)
+
+  useEffect(() => {
+    function suppressGhostClick(event: MouseEvent) {
+      if (suppressClickRef.current) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    }
+    window.addEventListener('click', suppressGhostClick, true)
+    return () => window.removeEventListener('click', suppressGhostClick, true)
+  }, [])
+
+  const members = useMemo(
+    () => team.map((id) => findPokemon(id, pokedex.pokemon)).filter((p): p is Pokemon => !!p),
+    [team, pokedex],
+  )
+  const benchMembers = useMemo(
+    () => bench.map((id) => findPokemon(id, pokedex.pokemon)).filter((p): p is Pokemon => !!p),
+    [bench, pokedex],
+  )
 
   const weaknessesByMember = useMemo(
     () => new Map(members.map((pokemon) => [pokemon.id, memberWeaknesses(chart, pokemon.types)])),
@@ -62,8 +105,21 @@ export function TeamPage() {
     [members, benchMembers, chart],
   )
 
-  const slots = Array.from({ length: MAX_TEAM_SIZE }, (_, index) => members[index])
-  const benchSlots = Array.from({ length: BENCH_SIZE }, (_, index) => benchMembers[index])
+  function handleDragStart() {
+    suppressClickRef.current = true
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      move(parseSlotId(String(active.id)), parseSlotId(String(over.id)))
+    }
+    // Un tick despues del drop, para tragarse el click fantasma que dispara
+    // el navegador sobre el elemento bajo el cursor al soltar.
+    requestAnimationFrame(() => {
+      suppressClickRef.current = false
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -72,36 +128,46 @@ export function TeamPage() {
         <p className="opacity-70">
           {members.length} / {MAX_TEAM_SIZE} Pokémon
         </p>
+        <p className="mt-1 text-xs opacity-60">
+          Arrastra una ficha a otro hueco para reordenar el equipo o el banquillo.
+        </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {slots.map((pokemon, index) =>
-          pokemon ? (
-            <TeamSlotCard
-              key={pokemon.id}
-              pokemon={pokemon}
-              weaknesses={weaknessesByMember.get(pokemon.id) ?? []}
-            />
-          ) : (
-            <EmptySlot key={`empty-${index}`} />
-          ),
-        )}
-      </div>
-
-      <section>
-        <h2 className="font-display mb-3 text-center text-lg uppercase opacity-80">
-          Banquillo · {benchMembers.length} / {BENCH_SIZE}
-        </h2>
-        <div className="grid grid-cols-4 gap-3">
-          {benchSlots.map((pokemon, index) =>
-            pokemon ? (
-              <BenchSlotCard key={pokemon.id} pokemon={pokemon} />
-            ) : (
-              <EmptyBenchSlot key={`empty-bench-${index}`} />
-            ),
-          )}
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {team.map((id, index) => {
+            const pokemon = findPokemon(id, pokedex.pokemon)
+            return (
+              <TeamDragSlot key={`team-${index}`} id={`team:${index}`} draggable={!!pokemon}>
+                {pokemon ? (
+                  <TeamSlotCard
+                    pokemon={pokemon}
+                    weaknesses={weaknessesByMember.get(pokemon.id) ?? []}
+                  />
+                ) : (
+                  <EmptySlot />
+                )}
+              </TeamDragSlot>
+            )
+          })}
         </div>
-      </section>
+
+        <section>
+          <h2 className="font-display mb-3 text-center text-lg uppercase opacity-80">
+            Banquillo · {benchMembers.length} / {BENCH_SIZE}
+          </h2>
+          <div className="grid grid-cols-4 gap-3">
+            {bench.map((id, index) => {
+              const pokemon = findPokemon(id, pokedex.pokemon)
+              return (
+                <TeamDragSlot key={`bench-${index}`} id={`bench:${index}`} draggable={!!pokemon}>
+                  {pokemon ? <BenchSlotCard pokemon={pokemon} /> : <EmptyBenchSlot />}
+                </TeamDragSlot>
+              )
+            })}
+          </div>
+        </section>
+      </DndContext>
 
       <Panel title="Debilidades del equipo">
         {members.length === 0 && benchMembers.length === 0 ? (
