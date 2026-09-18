@@ -2,6 +2,7 @@ import type { TypeInfo } from '@/data/schema'
 import type { TypeChart } from '@/domain/typeChart'
 
 export const MAX_TEAM_SIZE = 6
+export const BENCH_SIZE = 4
 
 export interface TeamWeakness {
   type: TypeInfo

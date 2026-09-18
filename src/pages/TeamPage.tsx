@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
+import { BenchSlotCard } from '@/components/BenchSlotCard'
 import { Panel } from '@/components/Panel'
 import { TeamSlotCard } from '@/components/TeamSlotCard'
 import { TypeIcon } from '@/components/TypeIcon'
 import { useDataset } from '@/data/pokedexContext'
 import type { Pokemon } from '@/data/schema'
 import { useTeam } from '@/data/teamContext'
-import { MAX_TEAM_SIZE, memberWeaknesses, teamWeaknesses } from '@/domain/team'
+import { BENCH_SIZE, MAX_TEAM_SIZE, memberWeaknesses, teamWeaknesses } from '@/domain/team'
 
 function EmptySlot() {
   return (
@@ -22,30 +23,47 @@ function EmptySlot() {
   )
 }
 
+function EmptyBenchSlot() {
+  return (
+    <Link
+      to="/"
+      className="flex min-h-24 flex-col items-center justify-center gap-1 border-2 border-dashed border-current/30 p-2 text-center text-xs opacity-60 hover:opacity-100"
+    >
+      <span aria-hidden="true" className="text-lg leading-none">
+        +
+      </span>
+      Añadir
+    </Link>
+  )
+}
+
+function toMembers(ids: number[], pokemon: Pokemon[]): Pokemon[] {
+  return ids
+    .map((id) => pokemon.find((candidate) => candidate.id === id))
+    .filter((candidate): candidate is Pokemon => candidate !== undefined)
+}
+
 export function TeamPage() {
   const { chart, pokedex } = useDataset()
-  const { ids } = useTeam()
+  const { ids, benchIds } = useTeam()
 
-  // El orden de `ids` es el orden en que se añadieron: se respeta en la rejilla.
-  const members = useMemo(
-    () =>
-      ids
-        .map((id) => pokedex.pokemon.find((pokemon) => pokemon.id === id))
-        .filter((pokemon): pokemon is Pokemon => pokemon !== undefined),
-    [ids, pokedex],
-  )
+  // El orden de `ids`/`benchIds` es el orden en que se añadieron: se respeta en la rejilla.
+  const members = useMemo(() => toMembers(ids, pokedex.pokemon), [ids, pokedex])
+  const benchMembers = useMemo(() => toMembers(benchIds, pokedex.pokemon), [benchIds, pokedex])
 
   const weaknessesByMember = useMemo(
     () => new Map(members.map((pokemon) => [pokemon.id, memberWeaknesses(chart, pokemon.types)])),
     [members, chart],
   )
 
+  // Las debilidades globales cuentan a titulares y banquillo: es el equipo completo de 10.
   const summary = useMemo(
-    () => teamWeaknesses(chart, members.map((pokemon) => pokemon.types)),
-    [members, chart],
+    () => teamWeaknesses(chart, [...members, ...benchMembers].map((pokemon) => pokemon.types)),
+    [members, benchMembers, chart],
   )
 
   const slots = Array.from({ length: MAX_TEAM_SIZE }, (_, index) => members[index])
+  const benchSlots = Array.from({ length: BENCH_SIZE }, (_, index) => benchMembers[index])
 
   return (
     <div className="space-y-6">
@@ -70,8 +88,23 @@ export function TeamPage() {
         )}
       </div>
 
+      <section>
+        <h2 className="font-display mb-3 text-center text-lg uppercase opacity-80">
+          Banquillo · {benchMembers.length} / {BENCH_SIZE}
+        </h2>
+        <div className="grid grid-cols-4 gap-3">
+          {benchSlots.map((pokemon, index) =>
+            pokemon ? (
+              <BenchSlotCard key={pokemon.id} pokemon={pokemon} />
+            ) : (
+              <EmptyBenchSlot key={`empty-bench-${index}`} />
+            ),
+          )}
+        </div>
+      </section>
+
       <Panel title="Debilidades del equipo">
-        {members.length === 0 ? (
+        {members.length === 0 && benchMembers.length === 0 ? (
           <p className="text-sm opacity-70">Añade Pokémon al equipo para ver sus debilidades combinadas.</p>
         ) : summary.length === 0 ? (
           <p className="text-sm opacity-70">Este equipo no tiene debilidades compartidas relevantes.</p>

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { useTeam } from '@/data/teamContext'
-import { MAX_TEAM_SIZE } from '@/domain/team'
 
 interface TeamButtonProps {
   pokemonId: number
@@ -75,7 +74,7 @@ export function TeamButton({
           inTeam
             ? `Quitar a ${pokemonName} del equipo`
             : isFull
-              ? `El equipo ya tiene ${MAX_TEAM_SIZE} Pokémon`
+              ? 'El equipo y el banquillo ya están completos'
               : `Añadir a ${pokemonName} al equipo`
         }
         // box-content: el borde se dibuja fuera de los 24px de contenido, que
