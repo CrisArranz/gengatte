@@ -20,6 +20,12 @@ import type { Pokemon } from '@/data/schema'
 import { useTeam, type SlotGroup, type SlotRef } from '@/data/teamContext'
 import { BENCH_SIZE, MAX_TEAM_SIZE, memberWeaknesses, teamWeaknesses } from '@/domain/team'
 
+// Cuánto se queda asentado el aviso de "Imagen copiada" y cuánto tarda cada
+// tramo (entrada y salida) de su transición; deben coincidir con la duración
+// que se le da por Tailwind (duration-500 en el JSX).
+const TOAST_VISIBLE_MS = 2500
+const TOAST_TRANSITION_MS = 500
+
 function EmptySlot() {
   return (
     <Link
@@ -160,19 +166,37 @@ export function TeamPage() {
   // para que el efecto de abajo se vuelva a disparar.
   const [prepareRetryToken, setPrepareRetryToken] = useState(0)
   const [prepareError, setPrepareError] = useState<string | null>(null)
-  const [showCopiedToast, setShowCopiedToast] = useState(false)
-  const copiedToastTimeoutRef = useRef<number | null>(null)
+  // 'hidden': desmontado. 'entering'/'visible': asentado arriba. 'leaving':
+  // animando de vuelta hacia abajo antes de desmontarse.
+  const [toastPhase, setToastPhase] = useState<'hidden' | 'entering' | 'visible' | 'leaving'>(
+    'hidden',
+  )
+  const toastHideTimeoutRef = useRef<number | null>(null)
+  const toastUnmountTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
     return () => {
-      if (copiedToastTimeoutRef.current) window.clearTimeout(copiedToastTimeoutRef.current)
+      if (toastHideTimeoutRef.current) window.clearTimeout(toastHideTimeoutRef.current)
+      if (toastUnmountTimeoutRef.current) window.clearTimeout(toastUnmountTimeoutRef.current)
     }
   }, [])
 
   function flashCopiedToast() {
-    setShowCopiedToast(true)
-    if (copiedToastTimeoutRef.current) window.clearTimeout(copiedToastTimeoutRef.current)
-    copiedToastTimeoutRef.current = window.setTimeout(() => setShowCopiedToast(false), 1000)
+    if (toastHideTimeoutRef.current) window.clearTimeout(toastHideTimeoutRef.current)
+    if (toastUnmountTimeoutRef.current) window.clearTimeout(toastUnmountTimeoutRef.current)
+
+    // Empieza abajo y transparente; el siguiente frame lo anima hacia su
+    // posición final (si se aplicara ya asentado, no habría transición que
+    // reproducir: el navegador pintaría directamente el estado final).
+    setToastPhase('entering')
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setToastPhase('visible'))
+    })
+
+    toastHideTimeoutRef.current = window.setTimeout(() => {
+      setToastPhase('leaving')
+      toastUnmountTimeoutRef.current = window.setTimeout(() => setToastPhase('hidden'), TOAST_TRANSITION_MS)
+    }, TOAST_VISIBLE_MS)
   }
 
   useEffect(() => {
@@ -383,10 +407,12 @@ export function TeamPage() {
         )}
       </Panel>
 
-      {showCopiedToast && (
+      {toastPhase !== 'hidden' && (
         <div
           role="status"
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded bg-green-600 px-4 py-2 text-sm font-bold text-white shadow-lg"
+          className={`fixed bottom-4 left-1/2 -translate-x-1/2 rounded-md border-2 border-green-600 bg-green-300 px-4 py-2 text-sm text-black shadow-lg transition-all duration-500 ease-out ${
+            toastPhase === 'visible' ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
         >
           Imagen copiada
         </div>
