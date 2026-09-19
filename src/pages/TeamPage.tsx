@@ -59,6 +59,29 @@ function findPokemon(id: number | null, pokemon: Pokemon[]): Pokemon | undefined
 }
 
 /**
+ * html-to-image incrusta cada <img> haciendo su propio fetch() a la URL
+ * original para convertirla en data URL. Si el navegador aún no ha
+ * terminado de descargarla (el artwork grande de los titulares tarda más
+ * que los sprites pequeños del banquillo), ese fetch compite con la
+ * descarga real en vez de servirse de la caché HTTP, y a veces falla. Se
+ * espera a que cada <img> ya visible haya cargado antes de generar la
+ * imagen para compartir.
+ */
+function waitForImagesToLoad(container: HTMLElement): Promise<void> {
+  const images = Array.from(container.querySelectorAll('img'))
+  return Promise.all(
+    images.map((image) => {
+      if (image.complete && image.naturalWidth > 0) return Promise.resolve()
+      return new Promise<void>((resolve) => {
+        image.addEventListener('load', () => resolve(), { once: true })
+        // Una imagen rota no debe bloquear a las demás indefinidamente.
+        image.addEventListener('error', () => resolve(), { once: true })
+      })
+    }),
+  ).then(() => undefined)
+}
+
+/**
  * html-to-image a veces rechaza con el Event de error de una <img> (no con
  * un Error), típicamente cuando una imagen no carga: String(event) da solo
  * "[object Event]", así que aquí se saca la URL real para saber cuál falló.
@@ -146,7 +169,11 @@ export function TeamPage() {
     let cancelled = false
     setPrepareError(null)
     const timeoutId = window.setTimeout(() => {
-      toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      waitForImagesToLoad(node)
+        .then(() => {
+          if (cancelled) return undefined
+          return toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
+        })
         .then((blob) => {
           if (cancelled || !blob) return
           shareFileRef.current = new File([blob], 'mi-equipo-gengatte.png', { type: 'image/png' })
