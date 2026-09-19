@@ -18,7 +18,7 @@ interface TeamShareCardProps {
  */
 export function TeamShareCard({ team, bench, ref }: TeamShareCardProps) {
   return (
-    <div ref={ref} className="w-[720px] bg-white p-8 text-slate-900">
+    <div ref={ref} className="w-180 bg-white p-8 text-slate-900">
       <h2 className="font-display mb-6 text-center text-2xl tracking-wide uppercase">
         Mi equipo Gengatte
       </h2>

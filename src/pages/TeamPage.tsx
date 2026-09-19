@@ -6,7 +6,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { toPng } from 'html-to-image'
+import { toBlob } from 'html-to-image'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { BenchSlotCard } from '@/components/BenchSlotCard'
@@ -106,17 +106,49 @@ export function TeamPage() {
   )
   const shareCardRef = useRef<HTMLDivElement>(null)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [shareStatus, setShareStatus] = useState<'shared' | 'copied' | 'downloaded' | 'error' | null>(
+    null,
+  )
 
-  async function handleDownload() {
+  async function handleShare() {
     const node = shareCardRef.current
     if (!node) return
     setIsDownloading(true)
+    setShareStatus(null)
     try {
-      const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      const blob = await toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
+      if (!blob) throw new Error('No se pudo generar la imagen')
+
+      const file = new File([blob], 'mi-equipo-gengatte.png', { type: 'image/png' })
+
+      // En móvil, compartir directo (WhatsApp, Mensajes, etc.) es lo que
+      // la mayoría espera al pulsar este botón: se prueba primero.
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Mi equipo Gengatte' })
+        setShareStatus('shared')
+        return
+      }
+
+      // Sin Web Share (la mayoría de escritorio), copiar al portapapeles
+      // permite pegar la imagen donde haga falta sin pasar por el disco.
+      if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+        setShareStatus('copied')
+        return
+      }
+
+      // Último recurso para navegadores sin ninguna de las dos APIs.
+      const objectUrl = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.download = 'mi-equipo-gengatte.png'
-      link.href = dataUrl
+      link.href = objectUrl
       link.click()
+      URL.revokeObjectURL(objectUrl)
+      setShareStatus('downloaded')
+    } catch (error) {
+      // El usuario cerrando el panel de compartir no es un fallo real.
+      if (error instanceof Error && error.name === 'AbortError') return
+      setShareStatus('error')
     } finally {
       setIsDownloading(false)
     }
@@ -161,12 +193,25 @@ export function TeamPage() {
         </p>
         <button
           type="button"
-          onClick={handleDownload}
+          onClick={handleShare}
           disabled={isDownloading}
           className="mt-3 border-2 border-current px-3 py-1.5 text-sm hover:bg-current/10 disabled:opacity-40"
         >
-          {isDownloading ? 'Generando imagen…' : 'Descargar imagen del equipo'}
+          {isDownloading ? 'Generando imagen…' : 'Compartir imagen del equipo'}
         </button>
+        {shareStatus === 'copied' && (
+          <p className="mt-1 text-xs opacity-70">
+            Imagen copiada. Pégala donde quieras (WhatsApp, un chat…).
+          </p>
+        )}
+        {shareStatus === 'downloaded' && (
+          <p className="mt-1 text-xs opacity-70">Imagen descargada.</p>
+        )}
+        {shareStatus === 'error' && (
+          <p className="mt-1 text-xs text-red-500">
+            No se pudo generar la imagen. Inténtalo de nuevo.
+          </p>
+        )}
       </header>
 
       {/*
