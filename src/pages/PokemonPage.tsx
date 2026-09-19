@@ -37,6 +37,7 @@ function NeighborLink({
     >
       {direction === 'previous' && <span aria-hidden="true">←</span>}
       <img
+        crossOrigin="anonymous"
         src={artworkUrl(pokemon.id)}
         alt=""
         width={40}
@@ -120,6 +121,7 @@ export function PokemonPage() {
 
       <header className="flex flex-wrap items-center justify-center gap-6">
         <img
+          crossOrigin="anonymous"
           src={artworkUrl(pokemon.id)}
           alt={pokemon.nameEs}
           width={192}

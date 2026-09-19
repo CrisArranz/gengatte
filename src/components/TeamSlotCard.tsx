@@ -40,6 +40,7 @@ export function TeamSlotCard({
 
       <Link to={`/pokemon/${pokemon.name}`} className="flex flex-col items-center gap-1">
         <img
+          crossOrigin="anonymous"
           src={artworkUrl(pokemon.id)}
           alt={pokemon.nameEs}
           width={80}

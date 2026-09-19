@@ -25,6 +25,7 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
       />
       <Link to={`/pokemon/${pokemon.name}`} className="flex flex-col items-center gap-2">
         <img
+          crossOrigin="anonymous"
           src={spriteUrl(pokemon.id)}
           alt={pokemon.nameEs}
           width={96}

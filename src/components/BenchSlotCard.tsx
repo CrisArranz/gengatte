@@ -36,6 +36,7 @@ export function BenchSlotCard({ pokemon }: { pokemon: Pokemon }) {
 
       <Link to={`/pokemon/${pokemon.name}`} className="flex flex-col items-center gap-1">
         <img
+          crossOrigin="anonymous"
           src={spriteUrl(pokemon.id)}
           alt={pokemon.nameEs}
           width={56}
