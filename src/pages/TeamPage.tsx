@@ -58,6 +58,23 @@ function findPokemon(id: number | null, pokemon: Pokemon[]): Pokemon | undefined
   return pokemon.find((candidate) => candidate.id === id)
 }
 
+/**
+ * html-to-image a veces rechaza con el Event de error de una <img> (no con
+ * un Error), típicamente cuando una imagen no carga: String(event) da solo
+ * "[object Event]", así que aquí se saca la URL real para saber cuál falló.
+ */
+function describeError(error: unknown): string {
+  if (error instanceof Error) return `${error.name}: ${error.message}`
+  if (error instanceof Event) {
+    const target = error.target
+    if (target instanceof HTMLImageElement) {
+      return `Fallo al cargar imagen (evento "${error.type}"): ${target.currentSrc || target.src}`
+    }
+    return `Evento de error sin detalle: "${error.type}"`
+  }
+  return String(error)
+}
+
 export function TeamPage() {
   const { chart, pokedex } = useDataset()
   const { team, bench, move } = useTeam()
@@ -138,7 +155,7 @@ export function TeamPage() {
         .catch((error: unknown) => {
           if (cancelled) return
           console.error('No se pudo preparar la imagen del equipo:', error)
-          setPrepareError(error instanceof Error ? `${error.name}: ${error.message}` : String(error))
+          setPrepareError(describeError(error))
         })
     }, 300)
     return () => {
@@ -166,7 +183,7 @@ export function TeamPage() {
       }
       console.error('No se pudo compartir la imagen del equipo:', error)
       setShareStatus('error')
-      setShareError(error instanceof Error ? `${error.name}: ${error.message}` : String(error))
+      setShareError(describeError(error))
       setIsSharing(false)
     }
 
