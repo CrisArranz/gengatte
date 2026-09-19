@@ -118,11 +118,16 @@ export function TeamPage() {
     null,
   )
   const [shareError, setShareError] = useState<string | null>(null)
+  // Reintentar la preparación (p. ej. si falló) solo requiere cambiar esto
+  // para que el efecto de abajo se vuelva a disparar.
+  const [prepareRetryToken, setPrepareRetryToken] = useState(0)
+  const [prepareError, setPrepareError] = useState<string | null>(null)
 
   useEffect(() => {
     const node = shareCardRef.current
     if (!node) return
     let cancelled = false
+    setPrepareError(null)
     const timeoutId = window.setTimeout(() => {
       toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
         .then((blob) => {
@@ -131,16 +136,22 @@ export function TeamPage() {
           setShareReady(true)
         })
         .catch((error: unknown) => {
+          if (cancelled) return
           console.error('No se pudo preparar la imagen del equipo:', error)
+          setPrepareError(error instanceof Error ? `${error.name}: ${error.message}` : String(error))
         })
     }, 300)
     return () => {
       cancelled = true
       window.clearTimeout(timeoutId)
     }
-  }, [teamForShare, benchForShare])
+  }, [teamForShare, benchForShare, prepareRetryToken])
 
   function handleShare() {
+    if (prepareError) {
+      setPrepareRetryToken((token) => token + 1)
+      return
+    }
     const file = shareFileRef.current
     if (!file) return
     setIsSharing(true)
@@ -236,15 +247,23 @@ export function TeamPage() {
         <button
           type="button"
           onClick={handleShare}
-          disabled={!shareReady || isSharing}
+          disabled={isSharing || (!shareReady && !prepareError)}
           className="mt-3 border-2 border-current px-3 py-1.5 text-sm hover:bg-current/10 disabled:opacity-40"
         >
           {isSharing
             ? 'Compartiendo…'
-            : shareReady
-              ? 'Compartir imagen del equipo'
-              : 'Preparando imagen…'}
+            : prepareError
+              ? 'Reintentar'
+              : shareReady
+                ? 'Compartir imagen del equipo'
+                : 'Preparando imagen…'}
         </button>
+        {prepareError && (
+          <p className="mt-1 text-xs text-red-500">
+            No se pudo generar la imagen del equipo.
+            <span className="block opacity-70">{prepareError}</span>
+          </p>
+        )}
         {shareStatus === 'shared' && (
           <p className="mt-1 text-xs opacity-70">Imagen compartida.</p>
         )}
