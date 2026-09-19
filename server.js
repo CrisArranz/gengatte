@@ -46,7 +46,10 @@ const csp = [
   "style-src 'self'",
   // Las imagenes (artwork, sprites e iconos de tipo) son remotas por diseno.
   "img-src 'self' data: https://raw.githubusercontent.com",
-  "connect-src 'self'",
+  // html-to-image (imagen para compartir/copiar el equipo) las vuelve a pedir
+  // con fetch() para incrustarlas como data URL: eso lo rige connect-src, no
+  // img-src, así que sin esto la petición cae y genera una imagen rota.
+  "connect-src 'self' https://raw.githubusercontent.com",
   "font-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
