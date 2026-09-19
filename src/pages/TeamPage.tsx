@@ -105,57 +105,95 @@ export function TeamPage() {
     [bench, pokedex],
   )
   const shareCardRef = useRef<HTMLDivElement>(null)
-  const [isDownloading, setIsDownloading] = useState(false)
+  // Safari exige que compartir/copiar se dispare de forma síncrona dentro
+  // del gesto de click: si antes se espera a generar la imagen (toBlob
+  // tarda, aunque sea poco), para cuando se llama a share()/clipboard.write()
+  // ya ha caducado el permiso y responde con NotAllowedError. Por eso la
+  // imagen se genera en segundo plano cada vez que cambia el equipo, y el
+  // click solo dispara la llamada con el fichero ya listo.
+  const shareFileRef = useRef<File | null>(null)
+  const [shareReady, setShareReady] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
   const [shareStatus, setShareStatus] = useState<'shared' | 'copied' | 'downloaded' | 'error' | null>(
     null,
   )
   const [shareError, setShareError] = useState<string | null>(null)
 
-  async function handleShare() {
+  useEffect(() => {
     const node = shareCardRef.current
     if (!node) return
-    setIsDownloading(true)
+    let cancelled = false
+    const timeoutId = window.setTimeout(() => {
+      toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
+        .then((blob) => {
+          if (cancelled || !blob) return
+          shareFileRef.current = new File([blob], 'mi-equipo-gengatte.png', { type: 'image/png' })
+          setShareReady(true)
+        })
+        .catch((error: unknown) => {
+          console.error('No se pudo preparar la imagen del equipo:', error)
+        })
+    }, 300)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [teamForShare, benchForShare])
+
+  function handleShare() {
+    const file = shareFileRef.current
+    if (!file) return
+    setIsSharing(true)
     setShareStatus(null)
     setShareError(null)
-    try {
-      const blob = await toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
-      if (!blob) throw new Error('No se pudo generar la imagen')
 
-      const file = new File([blob], 'mi-equipo-gengatte.png', { type: 'image/png' })
-
-      // En móvil, compartir directo (WhatsApp, Mensajes, etc.) es lo que
-      // la mayoría espera al pulsar este botón: se prueba primero.
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Mi equipo Gengatte' })
-        setShareStatus('shared')
+    function reportError(error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        // El usuario cerrando el panel de compartir no es un fallo real.
+        setIsSharing(false)
         return
       }
-
-      // Sin Web Share (la mayoría de escritorio), copiar al portapapeles
-      // permite pegar la imagen donde haga falta sin pasar por el disco.
-      if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
-        setShareStatus('copied')
-        return
-      }
-
-      // Último recurso para navegadores sin ninguna de las dos APIs.
-      const objectUrl = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.download = 'mi-equipo-gengatte.png'
-      link.href = objectUrl
-      link.click()
-      URL.revokeObjectURL(objectUrl)
-      setShareStatus('downloaded')
-    } catch (error) {
-      // El usuario cerrando el panel de compartir no es un fallo real.
-      if (error instanceof Error && error.name === 'AbortError') return
       console.error('No se pudo compartir la imagen del equipo:', error)
       setShareStatus('error')
       setShareError(error instanceof Error ? `${error.name}: ${error.message}` : String(error))
-    } finally {
-      setIsDownloading(false)
+      setIsSharing(false)
     }
+
+    // En móvil, compartir directo (WhatsApp, Mensajes, etc.) es lo que
+    // la mayoría espera al pulsar este botón: se prueba primero.
+    if (navigator.canShare?.({ files: [file] })) {
+      navigator
+        .share({ files: [file], title: 'Mi equipo Gengatte' })
+        .then(() => {
+          setShareStatus('shared')
+          setIsSharing(false)
+        })
+        .catch(reportError)
+      return
+    }
+
+    // Sin Web Share (la mayoría de escritorio), copiar al portapapeles
+    // permite pegar la imagen donde haga falta sin pasar por el disco.
+    if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+      navigator.clipboard
+        .write([new ClipboardItem({ [file.type]: file })])
+        .then(() => {
+          setShareStatus('copied')
+          setIsSharing(false)
+        })
+        .catch(reportError)
+      return
+    }
+
+    // Último recurso para navegadores sin ninguna de las dos APIs.
+    const objectUrl = URL.createObjectURL(file)
+    const link = document.createElement('a')
+    link.download = 'mi-equipo-gengatte.png'
+    link.href = objectUrl
+    link.click()
+    URL.revokeObjectURL(objectUrl)
+    setShareStatus('downloaded')
+    setIsSharing(false)
   }
 
   const weaknessesByMember = useMemo(
@@ -198,10 +236,14 @@ export function TeamPage() {
         <button
           type="button"
           onClick={handleShare}
-          disabled={isDownloading}
+          disabled={!shareReady || isSharing}
           className="mt-3 border-2 border-current px-3 py-1.5 text-sm hover:bg-current/10 disabled:opacity-40"
         >
-          {isDownloading ? 'Generando imagen…' : 'Compartir imagen del equipo'}
+          {isSharing
+            ? 'Compartiendo…'
+            : shareReady
+              ? 'Compartir imagen del equipo'
+              : 'Preparando imagen…'}
         </button>
         {shareStatus === 'shared' && (
           <p className="mt-1 text-xs opacity-70">Imagen compartida.</p>
