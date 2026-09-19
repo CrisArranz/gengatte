@@ -18,7 +18,7 @@ export function TeamSlotCard({
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
-    <div className="relative flex flex-col items-center gap-2 border-2 border-current p-3 text-center">
+    <div className="relative flex h-full flex-col items-center justify-between gap-2 border-2 border-current p-3 text-center">
       <button
         type="button"
         onClick={() => setConfirmOpen(true)}

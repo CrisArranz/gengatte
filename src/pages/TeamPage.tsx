@@ -24,7 +24,7 @@ function EmptySlot() {
   return (
     <Link
       to="/"
-      className="flex min-h-44 flex-col items-center justify-center gap-1 border-2 border-dashed border-current/30 p-3 text-center text-sm opacity-60 hover:opacity-100"
+      className="flex h-full min-h-44 flex-col items-center justify-center gap-1 border-2 border-dashed border-current/30 p-3 text-center text-sm opacity-60 hover:opacity-100"
     >
       <span aria-hidden="true" className="text-2xl leading-none">
         +
@@ -38,7 +38,7 @@ function EmptyBenchSlot() {
   return (
     <Link
       to="/"
-      className="flex min-h-24 flex-col items-center justify-center gap-1 border-2 border-dashed border-current/30 p-2 text-center text-xs opacity-60 hover:opacity-100"
+      className="flex h-full min-h-24 flex-col items-center justify-center gap-1 border-2 border-dashed border-current/30 p-2 text-center text-xs opacity-60 hover:opacity-100"
     >
       <span aria-hidden="true" className="text-lg leading-none">
         +
