@@ -199,6 +199,9 @@ export function TeamPage() {
         >
           {isDownloading ? 'Generando imagen…' : 'Compartir imagen del equipo'}
         </button>
+        {shareStatus === 'shared' && (
+          <p className="mt-1 text-xs opacity-70">Imagen compartida.</p>
+        )}
         {shareStatus === 'copied' && (
           <p className="mt-1 text-xs opacity-70">
             Imagen copiada. Pégala donde quieras (WhatsApp, un chat…).
