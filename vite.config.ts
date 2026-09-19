@@ -7,9 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     // Permite abrir el servidor de desarrollo a través de un túnel (p. ej.
-    // `npx localtunnel --port 5173`) para probar en el móvil con HTTPS real,
-    // necesario para las APIs de Web Share/Clipboard.
-    allowedHosts: ['.loca.lt'],
+    // `npx cloudflared tunnel --url http://localhost:5173`) para probar en
+    // el móvil con HTTPS real, necesario para las APIs de Web Share/Clipboard.
+    allowedHosts: ['.trycloudflare.com', '.loca.lt'],
   },
   resolve: {
     // Debe coincidir con "paths" de tsconfig.json: TypeScript resuelve el
