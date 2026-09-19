@@ -145,23 +145,35 @@ export function TeamPage() {
     [bench, pokedex],
   )
   const shareCardRef = useRef<HTMLDivElement>(null)
-  // Safari exige que compartir/copiar se dispare de forma síncrona dentro
+  // Safari exige que clipboard.write() se dispare de forma síncrona dentro
   // del gesto de click: si antes se espera a generar la imagen (toBlob
-  // tarda, aunque sea poco), para cuando se llama a share()/clipboard.write()
-  // ya ha caducado el permiso y responde con NotAllowedError. Por eso la
-  // imagen se genera en segundo plano cada vez que cambia el equipo, y el
-  // click solo dispara la llamada con el fichero ya listo.
+  // tarda, aunque sea poco), para cuando se llama a clipboard.write() ya ha
+  // caducado el permiso y responde con NotAllowedError. Por eso la imagen
+  // se genera en segundo plano cada vez que cambia el equipo, y el click
+  // solo dispara la llamada con el fichero ya listo.
   const shareFileRef = useRef<File | null>(null)
   const [shareReady, setShareReady] = useState(false)
   const [isSharing, setIsSharing] = useState(false)
-  const [shareStatus, setShareStatus] = useState<'shared' | 'copied' | 'downloaded' | 'error' | null>(
-    null,
-  )
+  const [shareStatus, setShareStatus] = useState<'downloaded' | 'error' | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
   // Reintentar la preparación (p. ej. si falló) solo requiere cambiar esto
   // para que el efecto de abajo se vuelva a disparar.
   const [prepareRetryToken, setPrepareRetryToken] = useState(0)
   const [prepareError, setPrepareError] = useState<string | null>(null)
+  const [showCopiedToast, setShowCopiedToast] = useState(false)
+  const copiedToastTimeoutRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copiedToastTimeoutRef.current) window.clearTimeout(copiedToastTimeoutRef.current)
+    }
+  }, [])
+
+  function flashCopiedToast() {
+    setShowCopiedToast(true)
+    if (copiedToastTimeoutRef.current) window.clearTimeout(copiedToastTimeoutRef.current)
+    copiedToastTimeoutRef.current = window.setTimeout(() => setShowCopiedToast(false), 1000)
+  }
 
   useEffect(() => {
     const node = shareCardRef.current
@@ -203,37 +215,20 @@ export function TeamPage() {
     setShareError(null)
 
     function reportError(error: unknown) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        // El usuario cerrando el panel de compartir no es un fallo real.
-        setIsSharing(false)
-        return
-      }
-      console.error('No se pudo compartir la imagen del equipo:', error)
+      console.error('No se pudo copiar la imagen del equipo:', error)
       setShareStatus('error')
       setShareError(describeError(error))
       setIsSharing(false)
     }
 
-    // En móvil, compartir directo (WhatsApp, Mensajes, etc.) es lo que
-    // la mayoría espera al pulsar este botón: se prueba primero.
-    if (navigator.canShare?.({ files: [file] })) {
-      navigator
-        .share({ files: [file], title: 'Mi equipo Gengatte' })
-        .then(() => {
-          setShareStatus('shared')
-          setIsSharing(false)
-        })
-        .catch(reportError)
-      return
-    }
-
-    // Sin Web Share (la mayoría de escritorio), copiar al portapapeles
-    // permite pegar la imagen donde haga falta sin pasar por el disco.
+    // Copiar al portapapeles permite pegar la imagen donde haga falta
+    // (WhatsApp, un chat...) sin abrir un panel de compartir ni pasar por
+    // el disco.
     if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
       navigator.clipboard
         .write([new ClipboardItem({ [file.type]: file })])
         .then(() => {
-          setShareStatus('copied')
+          flashCopiedToast()
           setIsSharing(false)
         })
         .catch(reportError)
@@ -295,25 +290,17 @@ export function TeamPage() {
           className="mt-3 border-2 border-current px-3 py-1.5 text-sm hover:bg-current/10 disabled:opacity-40"
         >
           {isSharing
-            ? 'Compartiendo…'
+            ? 'Copiando…'
             : prepareError
               ? 'Reintentar'
               : shareReady
-                ? 'Compartir imagen del equipo'
+                ? 'Copiar imagen del equipo'
                 : 'Preparando imagen…'}
         </button>
         {prepareError && (
           <p className="mt-1 text-xs text-red-500">
             No se pudo generar la imagen del equipo.
             <span className="block opacity-70">{prepareError}</span>
-          </p>
-        )}
-        {shareStatus === 'shared' && (
-          <p className="mt-1 text-xs opacity-70">Imagen compartida.</p>
-        )}
-        {shareStatus === 'copied' && (
-          <p className="mt-1 text-xs opacity-70">
-            Imagen copiada. Pégala donde quieras (WhatsApp, un chat…).
           </p>
         )}
         {shareStatus === 'downloaded' && (
@@ -395,6 +382,15 @@ export function TeamPage() {
           </>
         )}
       </Panel>
+
+      {showCopiedToast && (
+        <div
+          role="status"
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded bg-green-600 px-4 py-2 text-sm font-bold text-white shadow-lg"
+        >
+          Imagen copiada
+        </div>
+      )}
     </div>
   )
 }
