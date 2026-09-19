@@ -109,12 +109,14 @@ export function TeamPage() {
   const [shareStatus, setShareStatus] = useState<'shared' | 'copied' | 'downloaded' | 'error' | null>(
     null,
   )
+  const [shareError, setShareError] = useState<string | null>(null)
 
   async function handleShare() {
     const node = shareCardRef.current
     if (!node) return
     setIsDownloading(true)
     setShareStatus(null)
+    setShareError(null)
     try {
       const blob = await toBlob(node, { pixelRatio: 2, backgroundColor: '#ffffff' })
       if (!blob) throw new Error('No se pudo generar la imagen')
@@ -148,7 +150,9 @@ export function TeamPage() {
     } catch (error) {
       // El usuario cerrando el panel de compartir no es un fallo real.
       if (error instanceof Error && error.name === 'AbortError') return
+      console.error('No se pudo compartir la imagen del equipo:', error)
       setShareStatus('error')
+      setShareError(error instanceof Error ? `${error.name}: ${error.message}` : String(error))
     } finally {
       setIsDownloading(false)
     }
@@ -213,6 +217,7 @@ export function TeamPage() {
         {shareStatus === 'error' && (
           <p className="mt-1 text-xs text-red-500">
             No se pudo generar la imagen. Inténtalo de nuevo.
+            {shareError && <span className="block opacity-70">{shareError}</span>}
           </p>
         )}
       </header>
